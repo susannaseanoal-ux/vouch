@@ -1,0 +1,29 @@
+# Render blueprint - deploys the whole project as one web service.
+#
+# The site and the API are the same Node app: Express serves the built
+# React files and answers /api/* itself, so there is one service, one
+# URL and no cross-origin setup.
+#
+# The two secrets below are deliberately NOT in this file. It lives in a
+# public repository, and a database password committed to one is a
+# password anybody can read. Render asks for them when you deploy.
+services:
+  - type: web
+    name: vouch
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: npm install; npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: LEAD_PREFIX
+        value: VCH
+      # One proxy sits in front on Render, so a visitor's real address is
+      # the last entry in X-Forwarded-For rather than the proxy's own.
+      - key: TRUST_PROXY
+        value: "1"
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
