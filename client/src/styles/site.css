@@ -1,0 +1,433 @@
+﻿/* ===================================================================
+   Layout — header, hero, sections, footer, lookup page, dashboard.
+   Colours all come from theme.css.
+   =================================================================== */
+
+/* ---- logo ---------------------------------------------------------- */
+.logo { display: inline-flex; align-items: center; gap: .7rem; text-decoration: none; }
+.logo-mark { flex: none; display: grid; place-items: center; overflow: hidden; border-radius: var(--r-sm); }
+.logo-mark img { width: 100%; height: 100%; object-fit: contain; }
+
+/* A JPEG brings its own navy plate, so it is clipped to a circle and
+   reads as a badge rather than a stray rectangle on white. */
+.logo-mark.is-badge { border-radius: 50%; box-shadow: 0 2px 8px rgba(6, 32, 70, .22); }
+.logo-mark.is-badge img { transform: scale(1.02); }
+
+.logo-mark.is-fallback {
+  background: linear-gradient(135deg, var(--royal), var(--azure));
+  color: #fff; font-weight: 800; font-size: 1.15rem; border-radius: 50%;
+}
+
+.logo-text { display: flex; flex-direction: column; line-height: 1.1; }
+.logo-text {
+  font-weight: 800; font-size: 1.12rem; color: var(--text); letter-spacing: -.02em;
+}
+.logo-text small {
+  font-size: .62rem; font-weight: 600; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--brand-lift); margin-top: .18rem;
+}
+.logo.is-invert .logo-text { color: #fff; }
+.logo.is-invert .logo-text small { color: var(--brand-lift); }
+
+/* ---- header -------------------------------------------------------- */
+.site-header {
+  position: sticky; top: 0; z-index: 60;
+  background: rgba(255, 255, 255, .88);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+/* Three zones on one line: mark, links, actions.
+
+   A grid rather than space-between, because space-between positions the
+   links relative to whatever the two sides happen to weigh - change the
+   logo or add a button and the row drifts. Equal 1fr columns either side
+   put the links on the page's centre line and keep them there. */
+.header-in {
+  height: var(--header-h);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+.header-in > .logo { justify-self: start; }
+
+.nav { display: flex; align-items: center; gap: .15rem; }
+
+/* Direct children only. The menu also carries two buttons, and a bare
+   `.nav a` outranks `.btn-primary` on specificity - it would repaint
+   their text and padding out from under them. */
+.nav > a {
+  padding: .5rem .72rem; border-radius: var(--r-sm);
+  font-size: .9rem; font-weight: 600; color: var(--text-2);
+  white-space: nowrap;            /* a label that wraps breaks the row's baseline */
+  transition: color .18s, background .18s;
+}
+.nav > a:hover, .nav > a.is-active { color: var(--brand-lift); background: var(--bg-raise); }
+
+.header-cta { justify-self: end; display: flex; align-items: center; gap: .5rem; }
+/* None of these may be squeezed - they are the row's fixed furniture. */
+.header-cta > * { flex: none; }
+
+/* Every control on the right is 40px tall, so they sit on one line
+   rather than each finding its own height. */
+.nav-toggle {
+  display: none; width: 40px; height: 40px; place-items: center;
+  background: none; border: 1.5px solid var(--line);
+  border-radius: var(--r-sm); cursor: pointer; color: var(--text-2);
+}
+.nav-toggle:hover { border-color: var(--brand); color: var(--brand-lift); }
+
+/* The tagline under the mark goes first: it is decoration, and it costs
+   the links about 160px they need more. */
+@media (max-width: 1320px) { .site-header .logo-text small { display: none; } }
+
+/* Then the phone button - the widest control, and the number is on
+   every page's call-to-action and in the footer anyway. */
+@media (max-width: 1180px) { .header-cta .btn-outline { display: none; } }
+
+/* Five links plus the actions stop fitting long before the old 900px
+   breakpoint. Collapse to the menu while the row still looks deliberate
+   rather than letting it squash first. */
+@media (max-width: 1060px) {
+  .header-in { grid-template-columns: auto 1fr; }
+  .nav { display: none; }
+  .nav-toggle { display: grid; }
+
+  .site-header.is-open .nav {
+    display: flex; flex-direction: column; align-items: stretch;
+    position: absolute; left: 0; right: 0; top: var(--header-h);
+    background: var(--surface); border-bottom: 1px solid var(--line);
+    padding: .6rem clamp(1.1rem, 4vw, 2.2rem) 1rem; gap: .1rem;
+    box-shadow: 0 20px 40px -30px rgba(6, 32, 70, .55);
+  }
+  .site-header.is-open .nav > a { padding: .78rem .8rem; font-size: .95rem; }
+
+  /* Stacked, the sliding underline runs the whole width of the row and
+     reads as a divider. A tinted row says "you are here" without the
+     ambiguity. */
+  .site-header.is-open .nav > a::after { display: none; }
+  .site-header.is-open .nav > a.is-active {
+    background: var(--bg-raise); color: var(--brand-lift);
+  }
+
+  /* The two actions, once the menu is where they live. */
+  .site-header.is-open .nav .nav-extra {
+    display: flex; gap: .6rem; margin-top: .7rem; padding-top: .8rem;
+    border-top: 1px solid var(--line);
+  }
+  .site-header.is-open .nav .nav-extra > * { flex: 1; }
+}
+
+/* Never shown while the bar itself is carrying these. */
+.nav-extra { display: none; }
+
+/* ---- narrowing the bar, in order of what can be spared -------------- */
+
+/* The theme toggle is a preference, not a task, and the menu below it
+   holds the two things that are. */
+@media (max-width: 560px) {
+  .header-in { gap: .55rem; }
+  .header-cta { gap: .4rem; }
+  .header-cta .btn-primary { padding-inline: .9rem; }
+}
+
+/* The theme toggle is the last thing to go, and the only one: on a phone
+   the quote button is the point of the page, so it keeps its place in
+   the bar right down to the narrowest screens. */
+@media (max-width: 400px) {
+  .header-cta .theme-btn { display: none; }
+}
+
+/* ---- hero ---------------------------------------------------------- */
+.hero {
+  position: relative; overflow: hidden;
+  background:
+    radial-gradient(60% 90% at 88% 8%, rgba(46, 127, 212, .16), transparent 62%),
+    radial-gradient(50% 80% at 4% 96%, rgba(27, 63, 196, .10), transparent 60%),
+    var(--bg-raise);
+  padding: clamp(3.5rem, 8vw, 6.5rem) 0 clamp(3rem, 7vw, 5.5rem);
+}
+.hero-grid { display: grid; gap: clamp(2rem, 5vw, 3.5rem); align-items: center; grid-template-columns: 1fr; }
+@media (min-width: 960px) { .hero-grid { grid-template-columns: 1.05fr .95fr; } }
+
+.hero h1 {
+  font-size: clamp(2.1rem, 1.5rem + 2.7vw, 3.5rem);
+  margin: .7rem 0 .9rem;
+}
+.hero .lede { max-width: 34rem; }
+.hero-points { display: flex; flex-wrap: wrap; gap: .5rem 1.4rem; margin-top: 1.6rem; }
+.hero-points li { display: flex; align-items: center; gap: .45rem; font-size: .9rem; font-weight: 600; color: var(--text-2); }
+.hero-points svg { color: var(--ok); flex: none; }
+
+.hero-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
+  padding: clamp(1.4rem, 3vw, 2rem);
+}
+
+/* ---- trust strip --------------------------------------------------- */
+.strip { border-block: 1px solid var(--line); background: var(--surface); }
+
+/* Equal columns, not space-between.
+
+   These four have very different widths - "Multi" against "Typical first
+   call" - and space-between only equalises the gaps, so the figures land
+   at arbitrary points across the row. Equal columns with each figure
+   centred in its own gives the row a rhythm, and the hairlines say the
+   four are one set rather than four strays. */
+.strip-in {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 1.6rem 0;
+}
+
+.strip-stat {
+  text-align: center;
+  padding: .2rem clamp(.5rem, 2vw, 1.4rem);
+  border-left: 1px solid var(--line-soft);
+}
+.strip-stat:first-child { border-left: 0; }
+
+.strip-stat strong {
+  display: block;
+  font-size: clamp(1.3rem, 1.05rem + .95vw, 1.85rem);
+  color: var(--brand-lift);
+  line-height: 1.15;
+  /* The figures count up on reveal. Proportional digits change width as
+     they climb, which makes the whole row twitch. */
+  font-variant-numeric: tabular-nums;
+}
+/* Direct child only. The counter renders its own <span> inside the
+   <strong>, and a bare `.strip-stat span` catches it too - which painted
+   every number at label size while the one plain-text figure kept the
+   full size. That is what made the row look mismatched. */
+.strip-stat > span {
+  display: block;
+  margin-top: .3rem;
+  font-size: .82rem;
+  line-height: 1.35;
+  color: var(--text-3);
+}
+
+/* Two by two once four across would squeeze the labels onto three lines.
+   The dividers move with the layout: none on a row's first cell, and a
+   rule above the second row instead. */
+@media (max-width: 780px) {
+  .strip-in { grid-template-columns: repeat(2, 1fr); }
+  .strip-stat:nth-child(odd) { border-left: 0; }
+  .strip-stat:nth-child(n + 3) {
+    margin-top: 1.3rem; padding-top: 1.3rem; border-top: 1px solid var(--line-soft);
+  }
+}
+
+/* ---- section headings ---------------------------------------------- */
+.section-head { max-width: 42rem; margin-bottom: clamp(2rem, 4vw, 3rem); }
+.section-head h2 { font-size: clamp(1.6rem, 1.25rem + 1.7vw, 2.4rem); margin: .55rem 0 .7rem; }
+.section-head.is-center { margin-inline: auto; text-align: center; }
+
+.card h3 { font-size: 1.08rem; margin-bottom: .45rem; }
+.card p { font-size: .93rem; color: var(--text-3); }
+
+.step-num {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center; margin-bottom: .9rem;
+  background: var(--brand-deep); color: #fff; font-weight: 700; font-size: .88rem;
+}
+
+/* ---- closing CTA --------------------------------------------------- */
+.cta {
+  background: linear-gradient(135deg, var(--band), #0a1424);
+  color: #cddcec; border-radius: var(--r-lg);
+  padding: clamp(2rem, 5vw, 3.4rem);
+  text-align: center;
+}
+.cta h2 { color: #fff; font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.2rem); margin-bottom: .7rem; }
+.cta p { max-width: 36rem; margin-inline: auto; }
+.cta .btn-row { justify-content: center; margin-top: 1.8rem; }
+
+/* ---- footer -------------------------------------------------------- */
+.site-footer { background: var(--band); color: #a9bcd2; padding: clamp(2.5rem, 6vw, 4rem) 0 2rem; margin-top: clamp(3rem, 7vw, 5rem); }
+.footer-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); }
+.footer-grid h4 { color: #fff; font-size: .78rem; letter-spacing: .13em; text-transform: uppercase; margin-bottom: .9rem; }
+.footer-grid a, .footer-grid li { color: #a9bcd2; font-size: .9rem; line-height: 2; }
+.footer-grid a:hover { color: #fff; }
+.footer-bottom { border-top: 1px solid rgba(255, 255, 255, .12); margin-top: 2.5rem; padding-top: 1.5rem; font-size: .82rem; }
+
+/* ---- quote form ---------------------------------------------------- */
+.qf-head { margin-bottom: 1.2rem; }
+.qf-head h3 { font-size: 1.2rem; margin-bottom: .25rem; }
+.qf-grid { display: grid; gap: .9rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); }
+.qf-grid .span-2 { grid-column: 1 / -1; }
+.qf-consent { display: flex; gap: .6rem; align-items: flex-start; margin-top: 1.2rem; font-size: .8rem; color: var(--text-3); line-height: 1.55; }
+.qf-consent input { width: 1.05rem; height: 1.05rem; margin-top: .18rem; flex: none; accent-color: var(--brand-lift); }
+
+.success { text-align: center; padding: .5rem 0; }
+.success-tick {
+  width: 62px; height: 62px; margin: 0 auto 1.1rem; border-radius: 50%;
+  display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, var(--ok), #0e6a4c);
+  box-shadow: 0 14px 30px -10px rgba(18, 128, 92, .55);
+}
+.success h3 { font-size: 1.35rem; margin-bottom: .4rem; }
+.success-id {
+  margin: 1.3rem auto 0; max-width: 22rem; padding: 1.1rem 1.2rem;
+  background: var(--bg-raise); border: 1.5px solid var(--brand-line); border-radius: var(--r-md);
+}
+.success-id p { font-size: .68rem; letter-spacing: .17em; text-transform: uppercase; font-weight: 700; color: var(--brand-lift); }
+.success-id strong { display: block; font-size: clamp(1.5rem, 1.3rem + 1vw, 2rem); letter-spacing: .1em; color: var(--text); }
+
+/* ---- lookup page --------------------------------------------------- */
+.lookup-hero { background: linear-gradient(180deg, var(--band), #0a1424); color: #cddcec; padding: clamp(2.6rem, 7vw, 4rem) 0 clamp(3.4rem, 9vw, 5rem); text-align: center; }
+.lookup-hero h1 { color: #fff; font-size: clamp(1.8rem, 1.3rem + 2.2vw, 2.7rem); margin: .5rem 0 .6rem; }
+.lookup-hero p { max-width: 36rem; margin-inline: auto; }
+
+.lookup-card { background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow-lg); padding: clamp(1.4rem, 4vw, 2.2rem); margin-top: -3rem; position: relative; z-index: 2; }
+.lookup-form { display: flex; gap: .6rem; flex-wrap: wrap; align-items: flex-end; }
+.lookup-form .field { flex: 1 1 15rem; }
+.lookup-form input { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; }
+
+.result { margin-top: 1.6rem; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+.result-head { background: var(--band); color: #fff; padding: 1.2rem 1.4rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+.result-head h2 { color: #fff; font-size: 1.3rem; margin: .15rem 0 .1rem; }
+.result-head .rid { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .1em; color: var(--brand-lift); font-size: .9rem; }
+
+/* The status pill and the download sit together on the right of the
+   dark band. An outline button there has to be light-on-dark, or it is
+   dark text on a dark ground. */
+.result-acts { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; justify-content: flex-end; }
+.result-head .btn-outline { border-color: rgba(255,255,255,.34); color: #fff; background: transparent; }
+.result-head .btn-outline:hover:not(:disabled) { background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.6); color: #fff; }
+.result-head .btn-outline:disabled { opacity: .6; cursor: default; }
+
+/* details left, journey right */
+.result-body { display: grid; grid-template-columns: 1fr minmax(14rem, 17rem); align-items: stretch; }
+.result-body.no-journey { grid-template-columns: 1fr; }
+
+.rows { margin: 0; min-width: 0; }
+.rows > div { display: grid; grid-template-columns: minmax(140px, .7fr) 1.3fr; gap: 1rem; padding: .8rem 1.4rem; border-bottom: 1px solid var(--line-soft); }
+.rows > div:last-child { border-bottom: 0; }
+.rows dt { font-size: .81rem; color: var(--text-3); font-weight: 600; }
+.rows dd { font-size: .93rem; color: var(--text); font-weight: 600; word-break: break-word; }
+
+@media (max-width: 560px) { .rows > div { grid-template-columns: 1fr; gap: .15rem; } }
+
+/* ---- the journey track --------------------------------------------- */
+.journey { background: var(--bg-raise); border-left: 1px solid var(--line); padding: 1.2rem 1.3rem; }
+.journey-title { font-size: .66rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; color: var(--text-3); margin-bottom: 1rem; }
+.journey-note { margin-top: .9rem; font-size: .72rem; line-height: 1.5; color: var(--text-3); }
+
+.jstep { position: relative; padding: 0 0 1.15rem 1.85rem; }
+.jstep:last-child { padding-bottom: 0; }
+.jstep::before { content: ""; position: absolute; left: .52rem; top: 1.3rem; bottom: .1rem; width: 2px; background: var(--line); }
+.jstep:last-child::before { display: none; }
+
+.jtick {
+  position: absolute; left: 0; top: .08rem;
+  width: 1.2rem; height: 1.2rem; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface); border: 2px solid var(--line);
+  color: transparent; font-size: .66rem; font-weight: 900; line-height: 1;
+}
+.jname { display: block; font-size: .79rem; font-weight: 700; color: var(--text-4); line-height: 1.35; }
+.jmeta { display: block; margin-top: .15rem; }
+.jmeta span { display: block; font-size: .7rem; font-weight: 600; line-height: 1.45; color: var(--text-3); }
+.jmeta .untimed { color: var(--text-4); font-style: italic; }
+.jmeta .dur, .jmeta .book { color: var(--brand-lift); }
+
+.jstep.is-done .jname { color: var(--text); }
+.jstep.is-done::before { background: var(--brand); }
+.jstep.is-done .jtick { background: var(--brand-lift); border-color: var(--brand-lift); color: #fff; }
+
+.jstep.is-next .jname { color: var(--brand-lift); }
+.jstep.is-next .jtick { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-wash); }
+
+.jstep.is-extra .jtick { background: var(--surface); border-color: var(--brand); border-style: dashed; }
+.jstep.is-extra .jname { font-weight: 600; }
+
+.journey.is-done { background: var(--ok-bg); }
+.journey.is-done .jstep.is-done .jname { color: #0f7a4d; }
+.journey.is-done .jstep.is-done::before { background: var(--ok); }
+.journey.is-done .jstep.is-done .jtick { background: var(--ok); border-color: var(--ok); }
+
+.journey.is-stopped .jstep.is-done .jtick { background: var(--text-4); border-color: var(--text-4); }
+.journey.is-stopped .jstep.is-done::before { background: var(--text-4); }
+.journey.is-stopped .jstep.is-done .jname { color: var(--text-2); }
+
+@media (max-width: 760px) {
+  .result-body { grid-template-columns: 1fr; }
+  .journey { order: -1; border-left: 0; border-bottom: 1px solid var(--line); }
+}
+
+/* ==================================================================
+   NEWS
+   ================================================================== */
+.news-grid {
+  display: grid; gap: clamp(1rem, 2.5vw, 1.6rem);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+}
+
+.news-card {
+  position: relative; display: flex; flex-direction: column; height: 100%;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-md); overflow: hidden;
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease);
+}
+.news-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--brand-wash);
+  box-shadow: 0 18px 40px -26px rgba(6, 32, 70, .45);
+}
+.news-card.is-pinned { border-color: var(--brand-wash); }
+
+/* One click target over the whole card, under the text so selecting
+   still works. The heading stays a real link for screen readers. */
+.news-hit { position: absolute; inset: 0; z-index: 1; }
+
+.news-img { aspect-ratio: 16 / 9; overflow: hidden; background: var(--bg-raise); }
+.news-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.news-img.is-hero { aspect-ratio: 21 / 9; border-radius: var(--r-md); margin: 1.6rem 0; }
+
+.news-body { padding: 1.1rem 1.2rem 1.3rem; display: flex; flex-direction: column; gap: .5rem; flex: 1; }
+.news-body h2 { font-size: 1.08rem; line-height: 1.35; margin: 0; }
+.news-sum { font-size: .9rem; color: var(--text-3); margin: 0; }
+.news-more { margin-top: auto; padding-top: .4rem; font-size: .84rem; font-weight: 700; color: var(--brand-lift); }
+.news-card:hover .news-more .arrow { transform: translateX(3px); }
+
+.news-meta {
+  display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+  font-size: .76rem; color: var(--text-4); margin: 0;
+}
+.news-pin {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .16rem .5rem; border-radius: 999px;
+  background: var(--brand-wash); color: var(--brand-lift);
+  font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+}
+
+.news-pager { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 2.5rem; font-size: .86rem; }
+
+/* ---- one article --------------------------------------------------- */
+.news-back { font-size: .86rem; font-weight: 600; color: var(--brand-lift); }
+.news-title { font-size: clamp(1.7rem, 1.2rem + 2.4vw, 2.7rem); line-height: 1.15; margin: .7rem 0 .8rem; }
+.news-lede { margin-bottom: .4rem; }
+
+.news-prose { margin-top: 1.6rem; }
+.news-prose p { font-size: 1.02rem; line-height: 1.75; color: var(--text-2); margin: 0 0 1.15rem; }
+
+.news-cta {
+  margin-top: 2.6rem; padding: 1.6rem;
+  border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg-raise);
+}
+.news-cta h2 { font-size: 1.2rem; margin-bottom: .3rem; }
+.news-cta p { font-size: .92rem; color: var(--text-3); margin-bottom: 1.1rem; }
+
+.news-card.is-skeleton { padding: 1.2rem; gap: .7rem; display: flex; }
+
+/* ---- loading placeholder (used by both the site and the dashboard) --- */
+.sk-bar {
+  display: block; height: .72rem; border-radius: 5px;
+  background: linear-gradient(90deg, var(--line-soft) 25%, var(--line) 37%, var(--line-soft) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+@keyframes shimmer { from { background-position: 100% 50%; } to { background-position: 0 50%; } }

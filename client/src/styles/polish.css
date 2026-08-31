@@ -1,0 +1,191 @@
+﻿/* ===================================================================
+   The last ten percent.
+
+   Nothing here is a feature. It is the set of small things that are
+   individually invisible and collectively the difference between a site
+   that looks designed and one that feels built.
+   =================================================================== */
+
+/* ---- the opening ---------------------------------------------------- */
+/* Deliberately NOT var(--bg): the curtain stays dark in both themes.
+   The logo is a cream mark on navy, so on a white background it has
+   nothing to sit against - and the wordmark, being cream, disappears
+   entirely. The centre matches the navy the logo file already carries,
+   so the JPEG's own background melts into the screen. */
+.preload {
+  position: fixed; inset: 0; z-index: 10000;
+  display: grid; place-items: center;
+  background:
+    radial-gradient(60% 60% at 50% 45%, #24354f 0%, #131f33 45%, #070d18 100%);
+  transition: opacity .7s var(--ease), visibility .7s;
+}
+.preload.is-out { opacity: 0; visibility: hidden; }
+
+.preload-mark {
+  position: relative;
+  display: grid; place-items: center;
+  /* Everything stacks in one cell so the rings enclose the mark. */
+  grid-template-areas: "stack";
+}
+.preload-mark > * { grid-area: stack; }
+
+.preload-ring {
+  animation: draw 1.2s cubic-bezier(.65, 0, .35, 1) both;
+  transform-origin: 50% 50%;
+  stroke-dasharray: var(--len, 600);
+  stroke-dashoffset: var(--len, 600);
+}
+@keyframes draw {
+  from { stroke-dashoffset: var(--len, 600); opacity: 0; }
+  35%  { opacity: 1; }
+  to   { stroke-dashoffset: 0; opacity: 1; }
+}
+/* Circumference differs per ring, so each is told its own dash length. */
+.preload-ring:nth-child(1) { --len: 578; }   /* r = 92 */
+.preload-ring:nth-child(2) { --len: 478; }   /* r = 76 */
+
+/* The mark itself, scaling up as the rings close around it. */
+.preload-logo {
+  width: 104px; height: 104px; border-radius: 50%;
+  object-fit: cover;
+  opacity: 0;
+  animation: markIn .9s var(--ease) .25s forwards;
+}
+@keyframes markIn {
+  from { opacity: 0; transform: scale(.82); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.preload-word {
+  position: absolute;
+  bottom: -3.2rem;
+  font-size: .74rem; font-weight: 800; letter-spacing: .44em;
+  color: var(--cream); text-indent: .44em; white-space: nowrap;
+  opacity: 0; animation: fadeUp .7s var(--ease) .95s forwards;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* The whole page arrives once, behind the curtain.
+
+   Opacity only, and no `transform`. An element with a transform
+   animation still in effect - which `fill-mode: both` makes permanent -
+   becomes the containing block for every position:fixed descendant
+   inside it. That silently breaks the cursor, the progress bar and the
+   grain, which then scroll away with the page instead of staying put. */
+.app-in { animation: appIn .9s var(--ease) both; }
+@keyframes appIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ---- scrollbar ------------------------------------------------------ */
+/* Left visible on purpose - hiding it costs people orientation. It is
+   just made to belong to the palette. */
+* { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--line); border-radius: 999px;
+  border: 3px solid var(--bg); background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-4); background-clip: padding-box; }
+
+/* ---- selection, taps, focus ----------------------------------------- */
+::selection { background: var(--brand-deep); color: #fff; text-shadow: none; }
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Keyboard focus is a real, visible ring. Mouse users never see it,
+   keyboard users always do. */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--brand-lift);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* Skip link - the first thing a keyboard reaches, invisible until then. */
+.skip {
+  position: fixed; top: .8rem; left: .8rem; z-index: 10001;
+  padding: .7rem 1.1rem; border-radius: 999px;
+  background: var(--brand-deep); color: #fff; font-weight: 600; font-size: .88rem;
+  transform: translateY(-160%);
+  transition: transform .3s var(--ease);
+}
+.skip:focus-visible { transform: none; color: #fff; }
+
+/* ---- marquee -------------------------------------------------------- */
+.marquee { overflow: hidden; padding: .4rem 0; }
+.marquee-track {
+  display: flex; align-items: center; gap: 0;
+  width: max-content; will-change: transform;
+}
+.marquee-item {
+  display: inline-flex; align-items: center; gap: 2.6rem;
+  padding-right: 2.6rem;
+  font-size: clamp(1rem, .9rem + .5vw, 1.35rem);
+  font-weight: 600; letter-spacing: -.01em;
+  color: var(--text-4); white-space: nowrap;
+  transition: color .3s var(--ease);
+}
+.marquee-item:hover { color: var(--brand-lift); }
+.marquee-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--brand-deep); opacity: .55; flex: none;
+}
+
+/* ---- headings that reveal per line ---------------------------------- */
+.line-mask { display: block; overflow: hidden; }
+.line-mask > span {
+  display: block;
+  transform: translateY(102%);
+  transition: transform .95s var(--ease);
+  transition-delay: calc(var(--i, 0) * 100ms);
+}
+.is-in .line-mask > span, .line-mask.is-in > span { transform: none; }
+
+/* ---- links that underline properly ---------------------------------- */
+/* Grows from the left on the way in, shrinks to the right on the way
+   out, so hovering along a row of links reads as one continuous motion. */
+.ulink {
+  position: relative; display: inline-block;
+  background-image: linear-gradient(var(--brand-lift), var(--brand-lift));
+  background-size: 0% 1px; background-repeat: no-repeat;
+  background-position: left 100%;
+  transition: background-size .35s var(--ease);
+}
+.ulink:hover { background-size: 100% 1px; }
+
+/* ---- form detail ---------------------------------------------------- */
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-sunk) inset;
+  transition: background-color 9999s;
+}
+input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; }
+::-webkit-calendar-picker-indicator { filter: invert(.6); cursor: pointer; }
+[data-theme="light"] ::-webkit-calendar-picker-indicator { filter: none; }
+
+/* A field that is being filled in gets a quiet lift. */
+.field:focus-within label { color: var(--brand-lift); }
+
+/* ---- images --------------------------------------------------------- */
+img { background: var(--bg-raise); }
+
+/* ---- print ---------------------------------------------------------- */
+@media print {
+  .preload, .cur-dot, .cur-ring, .grain, .aurora,
+  .scroll-progress, .site-header, .marquee { display: none !important; }
+  body { background: #fff; color: #000; }
+}
+
+/* ---- reduced motion ------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .preload { display: none; }
+  .app-in { animation: none; }
+  .line-mask > span { transform: none; transition: none; }
+  .marquee-track { transform: none !important; }
+}

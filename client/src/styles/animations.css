@@ -1,0 +1,338 @@
+/* ===================================================================
+   Motion
+
+   Rules of the house:
+   - Everything moves a short distance, once, and settles. Nothing loops
+     in the reader's peripheral vision while they are trying to read.
+   - Entrances are driven by IntersectionObserver, so they fire when a
+     section is actually looked at rather than all at once on load.
+   - Every effect here is switched off wholesale by the reduced-motion
+     block at the end. That block is the reason this file can be
+     confident everywhere else.
+   =================================================================== */
+
+/* ---- scroll reveal ------------------------------------------------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity .7s var(--ease), transform .7s var(--ease);
+  transition-delay: calc(var(--i, 0) * 90ms);
+  will-change: opacity, transform;
+}
+.reveal.is-in { opacity: 1; transform: none; }
+
+.reveal-left  { transform: translateX(-26px); }
+.reveal-right { transform: translateX(26px); }
+.reveal-scale { transform: scale(.96); }
+.reveal-left.is-in, .reveal-right.is-in, .reveal-scale.is-in { transform: none; }
+
+/* ---- hero ---------------------------------------------------------- */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: none; }
+}
+.hero-anim > * {
+  opacity: 0;
+  animation: rise .85s var(--ease) forwards;
+  animation-delay: calc(var(--i, 0) * 110ms + 120ms);
+}
+
+/* Soft colour that drifts behind the hero. Big, slow and low contrast,
+   so it reads as depth rather than as something happening. */
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(3%, -4%, 0) scale(1.08); }
+}
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: .5;
+  pointer-events: none;
+  animation: drift 18s ease-in-out infinite;
+}
+.orb-1 { width: 32rem; height: 32rem; top: -12rem; right: -8rem; background: rgba(46,127,212,.30); }
+.orb-2 { width: 26rem; height: 26rem; bottom: -12rem; left: -6rem; background: rgba(27,63,196,.20); animation-delay: -7s; }
+
+/* The accented words in the headline.
+
+   This used to paint a gradient clipped to the text with
+   `color: transparent`. That only works while the text is a direct child:
+   SplitText wraps each word in its own animated span, and those children
+   inherited the transparent colour without carrying the background - so
+   the words rendered completely invisible.
+
+   A solid colour that follows the theme is legible in both, which is
+   what a headline has to be. */
+.grad, .grad .split-i { color: var(--text); }
+@keyframes sweep {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* ---- header -------------------------------------------------------- */
+.site-header { transition: box-shadow .3s var(--ease), background .3s var(--ease); }
+.site-header.is-stuck {
+  box-shadow: 0 6px 24px -12px rgba(6, 32, 70, .28);
+  background: rgba(255, 255, 255, .95);
+}
+
+/* Nav underline that grows from the middle. */
+/* Direct children only - the menu's two buttons are also links, and
+   this ::after would displace the one .btn draws for its own sheen. */
+.nav > a { position: relative; }
+.nav > a::after {
+  content: "";
+  position: absolute;
+  left: 50%; right: 50%; bottom: .28rem; height: 2px;
+  background: var(--brand-lift); border-radius: 2px;
+  transition: left .25s var(--ease), right .25s var(--ease);
+}
+.nav > a:hover::after, .nav > a.is-active::after { left: .8rem; right: .8rem; }
+
+/* ---- buttons ------------------------------------------------------- */
+.btn { position: relative; overflow: hidden; isolation: isolate; }
+.btn::after {
+  content: "";
+  position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.35) 50%, transparent 65%);
+  transform: translateX(-130%);
+  transition: transform .75s var(--ease);
+}
+.btn:hover::after { transform: translateX(130%); }
+.btn-outline::after, .btn-ghost::after {
+  background: linear-gradient(115deg, transparent 35%, rgba(46,127,212,.16) 50%, transparent 65%);
+}
+
+.arrow { transition: transform .25s var(--ease); }
+.btn:hover .arrow { transform: translateX(4px); }
+
+/* ---- cards --------------------------------------------------------- */
+.card { position: relative; overflow: hidden; }
+/* A hairline of brand colour that draws itself across the top on hover. */
+.card-hover::before {
+  content: "";
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--royal), var(--azure));
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .4s var(--ease);
+}
+.card-hover:hover::before { transform: scaleX(1); }
+.card-hover .card-icon { transition: transform .35s var(--ease), background .35s var(--ease); }
+.card-hover:hover .card-icon { transform: translateY(-2px) scale(1.06); background: var(--brand-line); }
+
+/* ---- counters ------------------------------------------------------ */
+.counter { font-variant-numeric: tabular-nums; }
+
+/* ---- carrier marquee ----------------------------------------------- */
+.marquee {
+  overflow: hidden;
+  /* Fades the strip out at both ends instead of cutting it off. */
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.marquee-track {
+  display: flex;
+  gap: 3.5rem;
+  width: max-content;
+  animation: slide 38s linear infinite;
+}
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes slide { to { transform: translateX(-50%); } }
+.marquee-item {
+  font-weight: 700;
+  font-size: 1.02rem;
+  letter-spacing: .04em;
+  color: var(--text-4);
+  white-space: nowrap;
+  transition: color .25s;
+}
+.marquee-item:hover { color: var(--brand-lift); }
+
+/* ---- accordion ----------------------------------------------------- */
+.faq-item { border-bottom: 1px solid var(--line); }
+.faq-q {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1.15rem 0; background: none; border: 0; cursor: pointer;
+  font-size: 1.02rem; font-weight: 650; color: var(--text); text-align: left;
+  transition: color .2s;
+}
+.faq-q:hover { color: var(--brand-lift); }
+.faq-sign { flex: none; width: 1.4rem; height: 1.4rem; position: relative; }
+.faq-sign::before, .faq-sign::after {
+  content: ""; position: absolute; top: 50%; left: 50%;
+  width: .85rem; height: 2px; border-radius: 2px; background: var(--brand-lift);
+  transform: translate(-50%, -50%);
+  transition: transform .3s var(--ease), opacity .3s var(--ease);
+}
+.faq-sign::after { transform: translate(-50%, -50%) rotate(90deg); }
+.faq-item.is-open .faq-sign::after { transform: translate(-50%, -50%) rotate(0); opacity: 0; }
+
+/* Height is animated via a grid row going 0fr -> 1fr, which works with
+   content of unknown height in a way max-height never quite does. */
+.faq-a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s var(--ease); }
+.faq-item.is-open .faq-a { grid-template-rows: 1fr; }
+.faq-a > div { overflow: hidden; }
+.faq-a p { padding-bottom: 1.15rem; color: var(--text-3); font-size: .95rem; max-width: 46rem; }
+
+/* ---- testimonials -------------------------------------------------- */
+.quote-card { position: relative; padding-top: 2.6rem; }
+.quote-card::before {
+  content: "\201C";
+  position: absolute; top: .4rem; left: 1.4rem;
+  font-size: 4.5rem; line-height: 1; font-family: Georgia, serif;
+  color: var(--brand-line);
+}
+.quote-card p { font-size: 1rem; color: var(--text-2); }
+.quote-who { display: flex; align-items: center; gap: .7rem; margin-top: 1.2rem; }
+.quote-av {
+  width: 38px; height: 38px; border-radius: 50%; flex: none;
+  display: grid; place-items: center; font-weight: 700; font-size: .85rem; color: #fff;
+  background: linear-gradient(135deg, var(--royal), var(--azure));
+}
+.quote-who strong { display: block; font-size: .88rem; color: var(--text); }
+.quote-who span { font-size: .78rem; color: var(--text-4); }
+
+/* ---- form polish --------------------------------------------------- */
+.hero-card { transition: box-shadow .4s var(--ease); }
+.hero-card:focus-within { box-shadow: 0 30px 60px -20px rgba(6, 50, 90, .3); }
+
+@keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+.success-tick { animation: pop .5s var(--ease) backwards .1s; }
+.success > *:not(.success-tick) { animation: rise .6s var(--ease) backwards; }
+.success h3 { animation-delay: .18s; }
+.success > p { animation-delay: .24s; }
+.success-id { animation-delay: .3s; }
+
+/* ---- honour the setting -------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1 !important; transform: none !important; }
+  .hero-anim > * { opacity: 1 !important; animation: none !important; }
+  .orb, .marquee-track, .grad { animation: none !important; }
+  .btn::after { display: none; }
+}
+
+/* ===================================================================
+   SIGNATURE — the ring motif, the estimator, the spotlight cards.
+   This is the part that is ours rather than every other insurance site.
+   =================================================================== */
+
+/* ---- scroll progress ----------------------------------------------- */
+.scroll-progress {
+  position: fixed; top: 0; left: 0; height: 3px; z-index: 300;
+  background: linear-gradient(90deg, var(--royal), var(--azure));
+  transition: width .12s linear;
+  pointer-events: none;
+}
+
+/* ---- the ring mark -------------------------------------------------- */
+.ringmark circle { transform-origin: 50% 50%; }
+.ringmark.is-spinning circle {
+  animation-name: turn;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes turn { to { transform: rotate(360deg); } }
+
+/* Sitting behind the hero, big and faint — depth, not decoration. */
+.hero-rings {
+  position: absolute;
+  top: 50%; right: -8%;
+  transform: translateY(-50%);
+  opacity: .16;
+  pointer-events: none;
+  z-index: 0;
+}
+@media (max-width: 960px) { .hero-rings { right: -30%; opacity: .1; } }
+.hero .wrap { position: relative; z-index: 1; }
+
+/* ---- estimator ------------------------------------------------------ */
+.est {
+  display: grid; gap: clamp(1.5rem, 4vw, 2.8rem);
+  grid-template-columns: 1fr;
+  align-items: center;
+}
+@media (min-width: 820px) { .est { grid-template-columns: 1.15fr .85fr; } }
+
+.est-controls { display: flex; flex-direction: column; gap: 1.5rem; }
+.est-row { display: flex; flex-direction: column; gap: .55rem; }
+.est-row label, .est-label { font-size: .88rem; font-weight: 600; color: var(--text-2); }
+.est-row label b, .est-label b { color: var(--brand-lift); font-weight: 800; }
+
+/* A slider that looks designed rather than default. */
+.est-row input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 6px; padding: 0; border: 0; border-radius: 999px;
+  background: linear-gradient(90deg, var(--royal), var(--azure));
+  cursor: pointer;
+}
+.est-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; border: 3px solid var(--royal);
+  box-shadow: 0 3px 10px rgba(6,32,70,.25);
+  transition: transform .18s var(--ease), box-shadow .18s var(--ease);
+}
+.est-row input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.14); }
+.est-row input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.05); box-shadow: 0 0 0 6px var(--brand-wash); }
+.est-row input[type="range"]::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; border: 3px solid var(--royal); cursor: pointer;
+}
+
+.seg { display: inline-flex; padding: 4px; gap: 4px; background: var(--bg-raise); border-radius: 999px; border: 1px solid var(--line); width: fit-content; }
+.seg button {
+  border: 0; background: none; cursor: pointer; border-radius: 999px;
+  padding: .5rem 1.15rem; font-size: .88rem; font-weight: 650; color: var(--text-3);
+  transition: background .25s var(--ease), color .25s var(--ease), box-shadow .25s var(--ease);
+}
+.seg button.is-on { background: var(--surface); color: var(--brand-lift); box-shadow: var(--shadow-sm); }
+
+.est-check { display: flex; gap: .6rem; align-items: center; font-size: .88rem; color: var(--text-2); cursor: pointer; }
+.est-check input { width: 1.1rem; height: 1.1rem; accent-color: var(--royal); cursor: pointer; }
+
+.est-dial { text-align: center; position: relative; }
+.est-dial svg { margin-inline: auto; }
+.est-figure {
+  position: absolute; top: 105px; left: 50%; transform: translate(-50%, -50%);
+  display: flex; align-items: baseline; justify-content: center; gap: .1rem;
+  color: var(--text);
+}
+.est-cur { font-size: 1.3rem; font-weight: 700; align-self: flex-start; margin-top: .5rem; }
+.est-num { font-size: 3.1rem; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; line-height: 1; }
+.est-per { font-size: .95rem; font-weight: 600; color: var(--text-4); }
+.est-cap { margin-top: .3rem; font-size: .86rem; color: var(--text-3); }
+.est-fine { margin-top: .8rem; font-size: .73rem; line-height: 1.5; color: var(--text-4); }
+
+/* ---- spotlight cards ------------------------------------------------ */
+/* A soft light follows the pointer across a card. The position comes
+   from two custom properties set in JS; with no pointer nothing shows. */
+.spot { position: relative; }
+.spot::after {
+  content: "";
+  position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 0%),
+              rgba(46,127,212,.13), transparent 70%);
+  opacity: 0; transition: opacity .3s var(--ease);
+  pointer-events: none; z-index: 0;
+}
+.spot:hover::after { opacity: 1; }
+.spot > * { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ringmark.is-spinning circle { animation: none !important; }
+  .scroll-progress { transition: none; }
+  .spot::after { display: none; }
+}
+
+/* ---- page transition ------------------------------------------------ */
+/* Keyed on the route, so each page fades up as it mounts. */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+.page-in { animation: pageIn .45s var(--ease); }
+
+@media (prefers-reduced-motion: reduce) {
+  .page-in { animation: none; }
+}

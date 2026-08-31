@@ -1,0 +1,291 @@
+﻿/* ===================================================================
+   Vouch - theme
+
+   Built from the logo rather than beside it. The mark is a cream V on
+   electric blue rings, on deep navy - so the site is deep navy, and the
+   blues are the light in it. That is what makes the page and the logo
+   read as one object instead of a white page with a blue badge on it.
+
+   Dark is the default. Light is a complete palette swap under
+   [data-theme="light"] - every colour is a variable precisely so that
+   swap is total rather than patched.
+   =================================================================== */
+:root {
+  /* sampled from the logo */
+  --royal:  #1b3fc4;
+  --azure:  #2e7fd4;
+  --cream:  #efede4;
+
+  /* ---- dark, the default ---- */
+  --bg:        #080e1a;
+  --bg-raise:  #0d1626;
+  --bg-sunk:   #050a13;
+  /* A deliberately dark band, for panels that carry white text. Unlike
+     --bg-sunk it does NOT invert with the theme - white on a band that
+     turns pale in light mode is unreadable. */
+  --band:      #050a13;
+  --surface:   #111c30;
+  --surface-2: #16223a;
+
+  --line:      #1e2c47;
+  --line-soft: #17233a;
+
+  --text:      #eef3fa;
+  --text-2:    #a9bad4;
+  --text-3:    #9aadc9;
+  --text-4:    #7b8dab;
+
+  --brand:      #2e7fd4;
+  --brand-lift: #4f9ce8;
+  --brand-deep: #1b3fc4;
+  --brand-wash: rgba(46, 127, 212, .12);
+  --brand-line: rgba(46, 127, 212, .32);
+
+  --ok: #2fd39b;
+  --ok-bg: rgba(47, 211, 155, .12);
+  --warn: #f0b429;
+  --err: #ff6b5e;
+  --err-bg: rgba(255, 107, 94, .12);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .4);
+  --shadow-md: 0 12px 30px -10px rgba(0, 0, 0, .55);
+  --shadow-lg: 0 40px 80px -30px rgba(0, 0, 0, .75);
+
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --r-lg: 20px;
+  --r-md: 13px;
+  --r-sm: 10px;
+
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --header-h: 76px;
+  --wrap: 78rem;
+}
+
+[data-theme="light"] {
+  --bg:        #ffffff;
+  --bg-raise:  #f6fafd;
+  --bg-sunk:   #eef4fa;
+  --band:      #16233a;
+  --surface:   #ffffff;
+  --surface-2: #f3f8fd;
+
+  --line:      #dfe8f2;
+  --line-soft: #eef4f9;
+
+  --text:      #0a1424;
+  --text-2:    #3a4d68;
+  --text-3:    #4a5f80;
+  --text-4:    #5e6f86;
+
+  --brand:      #1b3fc4;
+  --brand-lift: #1c6dc2;
+  --brand-deep: #12308f;
+  --brand-wash: rgba(27, 63, 196, .07);
+  --brand-line: rgba(27, 63, 196, .22);
+
+  --ok: #12805c;
+  --warn: #8a5a00;
+  --ok-bg: rgba(18, 128, 92, .1);
+  --err: #d92d20;
+  --err-bg: rgba(217, 45, 32, .08);
+
+  --shadow-sm: 0 1px 3px rgba(10, 20, 36, .07);
+  --shadow-md: 0 12px 28px -10px rgba(10, 20, 36, .16);
+  --shadow-lg: 0 40px 80px -30px rgba(10, 20, 36, .28);
+}
+
+/* ---- text on a dark band ------------------------------------------
+
+   These panels are dark in BOTH themes, so anything inside them needs
+   the light-on-dark values whichever theme is active. In light mode the
+   ordinary tokens are dark blues and greys - correct on a white page,
+   invisible here. Re-pointing the variables inside the band fixes every
+   descendant at once, rather than overriding each rule that lands in
+   one. */
+.result-head, .admin-top, .site-footer, .cta, .lookup-hero {
+  --brand-lift: #4f9ce8;
+  --brand:      #2e7fd4;
+  --text:       #eef3fa;
+  --text-2:     #a9bad4;
+  --text-3:     #9aadc9;
+  --text-4:     #7b8dab;
+  --ok:         #2fd39b;
+  --warn:       #f0b429;
+  --err:        #ff6b5e;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body, h1, h2, h3, h4, p, ul, ol, dl, dd, figure { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+img, svg { max-width: 100%; display: block; }
+button, input, select, textarea { font: inherit; color: inherit; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-2);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background .5s var(--ease), color .5s var(--ease);
+}
+
+h1, h2, h3, h4 {
+  color: var(--text);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -.025em;
+}
+
+a { color: var(--brand-lift); text-decoration: none; transition: color .2s; }
+a:hover { color: var(--text); }
+
+:focus-visible { outline: 2px solid var(--brand-lift); outline-offset: 3px; border-radius: 6px; }
+::selection { background: var(--brand); color: #fff; }
+
+.wrap {
+  width: 100%;
+  max-width: var(--wrap);
+  margin-inline: auto;
+  padding-inline: clamp(1.1rem, 4vw, 2.4rem);
+}
+
+.section { padding: clamp(4rem, 10vw, 8rem) 0; position: relative; }
+.section-alt { background: var(--bg-raise); }
+
+.eyebrow {
+  font-size: .72rem; font-weight: 700; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--brand-lift);
+  display: inline-flex; align-items: center; gap: .6rem;
+}
+.eyebrow::before { content: ""; width: 26px; height: 1px; background: var(--brand); opacity: .7; }
+.is-center .eyebrow { justify-content: center; }
+
+.lede { font-size: clamp(1.02rem, .98rem + .35vw, 1.2rem); color: var(--text-3); }
+.muted { color: var(--text-3); }
+
+.section-head { max-width: 44rem; margin-bottom: clamp(2.2rem, 5vw, 3.4rem); }
+.section-head h2 { font-size: clamp(1.8rem, 1.3rem + 2.2vw, 2.9rem); margin: .8rem 0; }
+.section-head.is-center { margin-inline: auto; text-align: center; }
+
+/* ---- buttons ------------------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .6em;
+  padding: .95rem 1.7rem; min-height: 50px;
+  border: 1px solid transparent; border-radius: 999px;
+  font-weight: 600; font-size: .95rem; line-height: 1.2;
+  cursor: pointer; text-align: center; position: relative;
+  /* A button is a fixed thing. Without this its minimum width is its
+     longest word, so any tight row breaks the label over two lines and
+     the button grows taller than everything beside it. */
+  white-space: nowrap;
+  transition: background .3s var(--ease), border-color .3s var(--ease),
+              color .3s var(--ease), box-shadow .35s var(--ease), transform .3s var(--ease);
+}
+.btn svg { flex: 0 0 auto; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+
+.btn-primary {
+  background: linear-gradient(120deg, var(--brand-deep), var(--brand));
+  color: #fff; box-shadow: 0 8px 24px -10px rgba(46,127,212,.7);
+}
+.btn-primary:hover { box-shadow: 0 14px 44px -10px rgba(46,127,212,.95); color: #fff; }
+
+.btn-outline { background: transparent; border-color: var(--line); color: var(--text); }
+.btn-outline:hover { border-color: var(--brand); background: var(--brand-wash); color: var(--text); }
+
+.btn-ghost { background: transparent; border-color: var(--line); color: var(--text-2); }
+.btn-ghost:hover { border-color: var(--text-4); color: var(--text); }
+
+.btn-white { background: var(--cream); border-color: var(--cream); color: #0a1424; }
+.btn-white:hover { background: #fff; border-color: #fff; color: #0a1424; }
+
+.btn-danger { background: transparent; border-color: var(--err); color: var(--err); }
+.btn-danger:hover { background: var(--err-bg); }
+
+.btn-sm { padding: .55rem 1.1rem; min-height: 40px; font-size: .85rem; }
+.btn-lg { padding: 1.1rem 2.1rem; min-height: 58px; font-size: 1rem; }
+.btn-row { display: flex; flex-wrap: wrap; gap: .9rem; }
+
+/* ---- surfaces ------------------------------------------------------ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: clamp(1.5rem, 3vw, 2.1rem);
+  position: relative;
+  transition: border-color .35s var(--ease), box-shadow .35s var(--ease),
+              background .35s var(--ease);
+}
+.card-hover:hover { border-color: var(--brand-line); box-shadow: var(--shadow-md); }
+.card h3 { font-size: 1.1rem; margin-bottom: .5rem; }
+.card p { font-size: .94rem; color: var(--text-3); }
+
+.card-icon {
+  width: 48px; height: 48px; display: grid; place-items: center;
+  border-radius: 14px; margin-bottom: 1.2rem;
+  background: var(--brand-wash); color: var(--brand-lift);
+  border: 1px solid var(--brand-line);
+}
+
+.step-num {
+  width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center;
+  margin-bottom: 1.1rem; font-weight: 700; font-size: .9rem;
+  background: var(--brand-wash); color: var(--brand-lift);
+  border: 1px solid var(--brand-line);
+}
+
+.grid { display: grid; gap: clamp(1rem, 2.2vw, 1.5rem); }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
+.grid-4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+
+/* ---- forms --------------------------------------------------------- */
+.field { display: flex; flex-direction: column; gap: .4rem; }
+.field label { font-size: .82rem; font-weight: 600; color: var(--text-2); }
+.field .hint { font-weight: 400; color: var(--text-4); }
+
+/* Every text-like input type. A type missing from this list gets the
+   browser's own white box, which is glaring next to the others - that is
+   what happened when the news form introduced type="url". */
+input[type="text"], input[type="email"], input[type="tel"], input[type="date"],
+input[type="password"], input[type="number"], input[type="datetime-local"],
+input[type="search"], input[type="url"], input[type="time"], input[type="month"],
+select, textarea {
+  width: 100%; padding: .8rem 1rem;
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+  background: var(--bg-sunk); color: var(--text);
+  transition: border-color .25s, box-shadow .25s, background .25s;
+}
+textarea { min-height: 7rem; resize: vertical; }
+input::placeholder, textarea::placeholder { color: var(--text-4); }
+
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--brand);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px var(--brand-wash);
+}
+select option { background: var(--surface); color: var(--text); }
+
+.msg { padding: .9rem 1.15rem; border-radius: var(--r-sm); font-size: .9rem; }
+.msg-bad { background: var(--err-bg); color: var(--err); border: 1px solid var(--err); }
+.msg-good { background: var(--ok-bg); color: var(--ok); border: 1px solid var(--ok); }
+
+.pill {
+  display: inline-block; padding: .3rem .8rem; border-radius: 999px;
+  font-size: .73rem; font-weight: 700; white-space: nowrap;
+  background: var(--brand-wash); color: var(--brand-lift);
+  border: 1px solid var(--brand-line);
+}
+.pill-new { background: rgba(240,180,41,.12); color: var(--warn); border-color: rgba(240,180,41,.3); }
+.pill-sold { background: var(--ok-bg); color: var(--ok); border-color: var(--ok); }
+.pill-closed { background: var(--line-soft); color: var(--text-3); border-color: var(--line); }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}

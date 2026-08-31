@@ -1,0 +1,18 @@
+{
+  "name": "vouch",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Vouch — insurance brokerage site and lead dashboard (MERN)",
+  "scripts": {
+    "setup": "node scripts/setup.js",
+    "dev": "node scripts/dev.js",
+    "demo": "node scripts/demo.js",
+    "seed": "npm --prefix server run seed",
+    "build": "npm --prefix server install --omit=dev && npm --prefix client install && npm --prefix client run build",
+    "start": "node server/src/index.js",
+    "build:client": "npm --prefix client run build",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev"
+  }
+}
