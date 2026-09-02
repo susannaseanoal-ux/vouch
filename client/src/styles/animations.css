@@ -133,7 +133,7 @@
 }
 .marquee-track {
   display: flex;
-  gap: 3.5rem;
+  gap: 1.6rem;
   width: max-content;
   animation: slide 38s linear infinite;
 }

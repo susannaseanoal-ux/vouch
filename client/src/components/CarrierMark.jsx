@@ -1,22 +1,21 @@
 /* ===================================================================
-   A carrier's badge for the "we shop these carriers" strip.
+   A carrier in the "we shop these carriers" strip.
 
-   Carriers publish their marks in two shapes and both have to sit in the
-   same row without one dwarfing the other:
+   Every mark is rendered as a single-ink silhouette at one height. That
+   is deliberate: these ten logos arrive in different shapes, at
+   different resolutions, in ten clashing brand colours, and dropping
+   them into a row as-is looks like a folder of app icons rather than a
+   panel of insurers. Flattening them to one ink is what turns a
+   collection of logos into a row that reads as a set - and it is why
+   the same treatment is on nearly every "trusted by" strip worth
+   copying.
 
-   - a wordmark (Aetna, Prudential, Foresters, Americo) already contains
-     the company name, so it is shown on its own at a fixed height;
-   - a square mark (Transamerica, SBLI and the rest) is shown in a tile
-     with the name typeset beside it.
+   It also solves the dark theme outright: most of these marks are dark
+   ink and would disappear, so the ink follows the theme instead.
 
-   Either way the pill is the same height, so the row reads as one set.
-   Wordmarks sit on white because most are dark ink that would vanish
-   against the dark theme.
-
-   A logo is a trademark. These came from the carriers' own public assets;
-   the definitive versions are in the media kit each carrier gives you
-   once you are appointed. Replace a file in client/public/carriers/ and
-   nothing else needs to change.
+   A logo is a trademark. These came from the carriers' own public
+   assets; the definitive files are in the media kit each carrier gives
+   you once you are appointed.
    =================================================================== */
 import { useState } from "react";
 
@@ -24,31 +23,28 @@ export default function CarrierMark({ name, initials, colour, src, wordmark }) {
   const [failed, setFailed] = useState(false);
   const showLogo = src && !failed;
 
-  /* A file that fails to load falls back to the monogram rather than
-     leaving a gap in the row. */
-  const onError = () => setFailed(true);
-
-  if (showLogo && wordmark) {
-    return (
-      <span className="carrier is-wordmark" title={name}>
-        <img className="carrier-wordmark" src={src} alt={name}
-             loading="lazy" decoding="async" onError={onError} />
-      </span>
-    );
-  }
-
   return (
     <span className="carrier" title={name}>
-      <span
-        className={"carrier-tile" + (showLogo ? " has-logo" : "")}
-        style={showLogo ? undefined : { "--tile": colour }}
-        aria-hidden="true"
-      >
-        {showLogo
-          ? <img src={src} alt="" loading="lazy" decoding="async" onError={onError} />
-          : initials}
-      </span>
-      <span className="carrier-name">{name}</span>
+      {showLogo ? (
+        <img
+          className={"carrier-logo" + (wordmark ? " is-wordmark" : "")}
+          src={src}
+          alt={name}
+          loading="lazy"
+          decoding="async"
+          /* A missing file falls back to the monogram rather than
+             leaving a gap in the row. */
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <span className="carrier-tile" style={{ "--tile": colour }} aria-hidden="true">
+          {initials}
+        </span>
+      )}
+
+      {/* A wordmark already says the company name; a square mark does
+          not, so that one gets it typeset alongside. */}
+      {!wordmark && <span className="carrier-name">{name}</span>}
     </span>
   );
 }

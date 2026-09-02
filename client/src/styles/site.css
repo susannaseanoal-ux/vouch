@@ -433,52 +433,53 @@
 @keyframes shimmer { from { background-position: 100% 50%; } to { background-position: 0 50%; } }
 
 /* ==================================================================
-   CARRIER BADGES
+   CARRIER STRIP
+
+   Every carrier sits in a card of exactly the same size. That is what
+   makes the row look deliberate: these ten marks arrive in different
+   shapes, resolutions and colours - some are wide wordmarks, some are
+   square icons with their own opaque backgrounds - and the one thing
+   that reconciles them is a consistent frame with the mark centred in
+   it and room to breathe.
+
+   The card is white in both themes, because a logo drawn for white
+   paper is what every one of these files is.
    ================================================================== */
 .carrier {
-  display: inline-flex; align-items: center; gap: .6rem;
-  padding: .5rem .95rem .5rem .55rem;
-  border: 1px solid var(--line); border-radius: 999px;
-  background: var(--surface);
+  display: inline-flex; align-items: center; justify-content: center; gap: .7rem;
+  width: 13rem; height: 4.5rem; padding: .9rem 1.1rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: 0 1px 2px rgba(10, 20, 36, .04);
   white-space: nowrap;
-  transition: border-color .25s var(--ease), box-shadow .25s var(--ease), transform .25s var(--ease);
+  transition: border-color .3s var(--ease), box-shadow .3s var(--ease), transform .3s var(--ease);
 }
 .carrier:hover {
   border-color: var(--brand-line);
-  box-shadow: 0 10px 24px -16px rgba(6, 32, 70, .5);
-  transform: translateY(-1px);
+  box-shadow: 0 14px 30px -20px rgba(6, 32, 70, .45);
+  transform: translateY(-2px);
 }
 
-/* The monogram tile, in the carrier's own colour. White on these darks
-   clears 4.5:1 comfortably, so the initials stay legible in both themes. */
+/* Contained, never cropped or stretched - the mark keeps its own
+   proportions whatever shape it arrived in. */
+.carrier-logo { max-height: 2.1rem; max-width: 100%; width: auto; object-fit: contain; }
+
+/* A wordmark carries the company name itself, so it gets the whole card
+   and runs as wide as the frame allows. */
+.carrier-logo.is-wordmark { max-height: 1.7rem; max-width: 10.5rem; }
+
+/* A square mark says nothing on its own, so it is paired with the name. */
+.carrier-logo:not(.is-wordmark) { flex: none; width: 2.1rem; height: 2.1rem; }
+.carrier-name {
+  font-size: .88rem; font-weight: 700; letter-spacing: -.01em;
+  color: #16233a; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Only reached when a logo file is missing. */
 .carrier-tile {
-  flex: none; width: 30px; height: 30px; border-radius: 8px;
+  flex: none; width: 2.1rem; height: 2.1rem; border-radius: 8px;
   display: grid; place-items: center;
   background: var(--tile, var(--brand));
-  color: #fff; font-size: .72rem; font-weight: 800; letter-spacing: .01em;
-  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .18);
+  color: #fff; font-size: .7rem; font-weight: 800;
 }
-
-.carrier-name { font-size: .88rem; font-weight: 700; color: var(--text-2); }
-
-/* A real logo file, when one is supplied. Boxed to the same height as
-   the monogram so a wide wordmark and a square mark still line up. */
-.carrier-logo {
-  height: 26px; width: auto; max-width: 8.5rem;
-  object-fit: contain; margin-inline: .4rem;
-}
-
-/* The row is a backdrop, not the message - it lifts on hover. */
-.marquee .carrier { opacity: .72; transition: opacity .25s var(--ease); }
-.marquee:hover .carrier { opacity: 1; }
-
-/* A tile holding a real logo file: white ground so a dark mark reads in
-   dark mode too, and the image contained rather than cropped. */
-.carrier-tile.has-logo { background: #fff; padding: 3px; box-shadow: inset 0 0 0 1px rgba(10, 20, 36, .1); }
-.carrier-tile.has-logo img { width: 100%; height: 100%; object-fit: contain; }
-
-/* A wordmark badge: the logo alone, at a fixed height so a wide mark and
-   a square one still make a level row. White ground in both themes -
-   most of these are dark ink and would disappear on the dark surface. */
-.carrier.is-wordmark { padding: .42rem 1rem; background: #fff; }
-.carrier-wordmark { height: 21px; width: auto; max-width: 9.5rem; object-fit: contain; }
