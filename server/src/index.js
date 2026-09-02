@@ -15,7 +15,7 @@ import helmet from "helmet";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(HERE, "../.env") });
 
-import { connectDb } from "./config/db.js";
+import { connectDb, dbReady } from "./config/db.js";
 import publicRoutes from "./routes/public.js";
 import newsRoutes from "./routes/news.js";
 import authRoutes from "./routes/auth.js";
@@ -57,7 +57,20 @@ app.use(
 app.use(express.json({ limit: "256kb" }));
 app.use(cors({ origin: process.env.CLIENT_ORIGIN || "http://localhost:5173" }));
 
-app.get("/api/health", (_req, res) => res.json({ ok: true, service: "vouch-api" }));
+app.get("/api/health", (_req, res) =>
+  res.json({ ok: true, service: "vouch-api", database: dbReady() ? "connected" : "unavailable" })
+);
+
+/* Everything below /api needs data. While the database is unreachable,
+   say so plainly and with the right status code instead of letting each
+   query hang until it times out. The website itself keeps working. */
+app.use("/api", (req, res, next) => {
+  if (req.path === "/health" || dbReady()) return next();
+  res.status(503).json({
+    ok: false,
+    error: "The service is starting up or the database is unavailable. Please try again shortly.",
+  });
+});
 
 app.use("/api", publicRoutes);
 app.use("/api", newsRoutes);
@@ -99,8 +112,12 @@ app.use((err, _req, res, _next) => {
 
 const port = Number(process.env.PORT || 4000);
 
-connectDb().then(() => {
+/* Listen regardless of the database. A host decides a deploy failed
+   when nothing binds to the port, so exiting here would take the whole
+   site down over a problem that only affects part of it. */
+connectDb().then((ok) => {
   app.listen(port, () => {
     console.log(`[vouch] API listening on http://localhost:${port}`);
+    if (!ok) console.warn("[vouch] serving without a database - data routes will return 503");
   });
 });
