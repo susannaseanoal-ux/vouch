@@ -471,3 +471,8 @@
 /* The row is a backdrop, not the message - it lifts on hover. */
 .marquee .carrier { opacity: .72; transition: opacity .25s var(--ease); }
 .marquee:hover .carrier { opacity: 1; }
+
+/* A tile holding a real logo file: white ground so a dark mark reads in
+   dark mode too, and the image contained rather than cropped. */
+.carrier-tile.has-logo { background: #fff; padding: 3px; box-shadow: inset 0 0 0 1px rgba(10, 20, 36, .1); }
+.carrier-tile.has-logo img { width: 100%; height: 100%; object-fit: contain; }

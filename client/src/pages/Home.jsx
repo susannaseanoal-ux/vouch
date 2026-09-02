@@ -39,16 +39,16 @@ const STATS = [
    ten identical chips. Add `src` to any of them to use a real logo file
    from client/public/carriers/ instead of the monogram. */
 const CARRIERS = [
-  { name: "Mutual of Omaha", initials: "MO", colour: "#0033a0" },
+  { name: "Mutual of Omaha", initials: "MO", colour: "#0033a0", src: "/carriers/mutual-of-omaha.png" },
   { name: "Foresters",       initials: "F",  colour: "#00694e" },
   { name: "Americo",         initials: "A",  colour: "#c8102e" },
   { name: "Aetna",           initials: "Ae", colour: "#7d3f98" },
-  { name: "Transamerica",    initials: "T",  colour: "#e4002b" },
-  { name: "Gerber Life",     initials: "G",  colour: "#0069aa" },
-  { name: "Corebridge",      initials: "C",  colour: "#1b3fc4" },
+  { name: "Transamerica",    initials: "T",  colour: "#e4002b", src: "/carriers/transamerica.png" },
+  { name: "Gerber Life",     initials: "G",  colour: "#0069aa", src: "/carriers/gerber-life.png" },
+  { name: "Corebridge",      initials: "C",  colour: "#1b3fc4", src: "/carriers/corebridge.png" },
   { name: "Prudential",      initials: "P",  colour: "#0b4ea2" },
-  { name: "Banner Life",     initials: "B",  colour: "#003da5" },
-  { name: "SBLI",            initials: "S",  colour: "#00457c" },
+  { name: "Banner Life",     initials: "B",  colour: "#003da5", src: "/carriers/banner-life.png" },
+  { name: "SBLI",            initials: "S",  colour: "#00457c", src: "/carriers/sbli.png" },
 ];
 
 const VOICES = [
