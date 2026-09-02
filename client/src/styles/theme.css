@@ -24,6 +24,10 @@
      --bg-sunk it does NOT invert with the theme - white on a band that
      turns pale in light mode is unreadable. */
   --band:      #050a13;
+  /* The sticky header is translucent, so it needs its own colour per
+     theme - a hard-coded white bar turns the dark theme inside out. */
+  --header-bg:  rgba(8, 14, 26, .88);
+  --header-bg-stuck: rgba(8, 14, 26, .96);
   --surface:   #111c30;
   --surface-2: #16223a;
 
@@ -67,6 +71,8 @@
   --bg-raise:  #f6fafd;
   --bg-sunk:   #eef4fa;
   --band:      #16233a;
+  --header-bg:  rgba(255, 255, 255, .88);
+  --header-bg-stuck: rgba(255, 255, 255, .96);
   --surface:   #ffffff;
   --surface-2: #f3f8fd;
 

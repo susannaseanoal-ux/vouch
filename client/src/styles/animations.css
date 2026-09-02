@@ -74,7 +74,7 @@
 .site-header { transition: box-shadow .3s var(--ease), background .3s var(--ease); }
 .site-header.is-stuck {
   box-shadow: 0 6px 24px -12px rgba(6, 32, 70, .28);
-  background: rgba(255, 255, 255, .95);
+  background: var(--header-bg-stuck);
 }
 
 /* Nav underline that grows from the middle. */
@@ -139,15 +139,10 @@
 }
 .marquee:hover .marquee-track { animation-play-state: paused; }
 @keyframes slide { to { transform: translateX(-50%); } }
-.marquee-item {
-  font-weight: 700;
-  font-size: 1.02rem;
-  letter-spacing: .04em;
-  color: var(--text-4);
-  white-space: nowrap;
-  transition: color .25s;
-}
-.marquee-item:hover { color: var(--brand-lift); }
+/* The row now carries carrier badges rather than plain words, so this
+   only handles spacing - the badge styles itself. See .carrier in
+   site.css. */
+.marquee-item { display: inline-flex; align-items: center; white-space: nowrap; }
 
 /* ---- accordion ----------------------------------------------------- */
 .faq-item { border-bottom: 1px solid var(--line); }

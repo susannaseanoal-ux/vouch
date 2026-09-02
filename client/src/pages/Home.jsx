@@ -8,6 +8,7 @@ import Estimator from "../components/Estimator.jsx";
 import { useRef } from "react";
 import { SplitText, Tilt, Magnetic, useScrollProgress } from "../components/Fx.jsx";
 import { VelocityMarquee } from "../components/Parallax.jsx";
+import CarrierMark from "../components/CarrierMark.jsx";
 import { BRAND, telHref } from "../brand.js";
 
 const goToQuote = () =>
@@ -33,9 +34,21 @@ const STATS = [
   { to: 50, label: "States served" },
 ];
 
+/* The panel we place business with. `colour` is each carrier's own
+   brand colour, so the row reads as ten distinct companies rather than
+   ten identical chips. Add `src` to any of them to use a real logo file
+   from client/public/carriers/ instead of the monogram. */
 const CARRIERS = [
-  "Mutual of Omaha", "Foresters", "Americo", "Aetna", "Transamerica",
-  "Gerber Life", "Corebridge", "Prudential", "Banner Life", "SBLI",
+  { name: "Mutual of Omaha", initials: "MO", colour: "#0033a0" },
+  { name: "Foresters",       initials: "F",  colour: "#00694e" },
+  { name: "Americo",         initials: "A",  colour: "#c8102e" },
+  { name: "Aetna",           initials: "Ae", colour: "#7d3f98" },
+  { name: "Transamerica",    initials: "T",  colour: "#e4002b" },
+  { name: "Gerber Life",     initials: "G",  colour: "#0069aa" },
+  { name: "Corebridge",      initials: "C",  colour: "#1b3fc4" },
+  { name: "Prudential",      initials: "P",  colour: "#0b4ea2" },
+  { name: "Banner Life",     initials: "B",  colour: "#003da5" },
+  { name: "SBLI",            initials: "S",  colour: "#00457c" },
 ];
 
 const VOICES = [
@@ -135,7 +148,9 @@ export default function Home() {
             We shop these carriers for you
           </p>
         </div>
-        <VelocityMarquee items={CARRIERS} />
+        <VelocityMarquee
+          items={CARRIERS.map((c) => <CarrierMark key={c.name} {...c} />)}
+        />
       </section>
 
       {/* ================= COVER ================= */}

@@ -111,10 +111,7 @@ export function VelocityMarquee({ items, baseSpeed = 0.4 }) {
     <div className="marquee">
       <div className="marquee-track" ref={track}>
         {[...items, ...items].map((item, i) => (
-          <span className="marquee-item" key={i}>
-            {item}
-            <i className="marquee-dot" aria-hidden="true" />
-          </span>
+          <span className="marquee-item" key={i}>{item}</span>
         ))}
       </div>
     </div>
