@@ -476,3 +476,9 @@
    dark mode too, and the image contained rather than cropped. */
 .carrier-tile.has-logo { background: #fff; padding: 3px; box-shadow: inset 0 0 0 1px rgba(10, 20, 36, .1); }
 .carrier-tile.has-logo img { width: 100%; height: 100%; object-fit: contain; }
+
+/* A wordmark badge: the logo alone, at a fixed height so a wide mark and
+   a square one still make a level row. White ground in both themes -
+   most of these are dark ink and would disappear on the dark surface. */
+.carrier.is-wordmark { padding: .42rem 1rem; background: #fff; }
+.carrier-wordmark { height: 21px; width: auto; max-width: 9.5rem; object-fit: contain; }

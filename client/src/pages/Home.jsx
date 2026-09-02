@@ -40,13 +40,13 @@ const STATS = [
    from client/public/carriers/ instead of the monogram. */
 const CARRIERS = [
   { name: "Mutual of Omaha", initials: "MO", colour: "#0033a0", src: "/carriers/mutual-of-omaha.png" },
-  { name: "Foresters",       initials: "F",  colour: "#00694e" },
-  { name: "Americo",         initials: "A",  colour: "#c8102e" },
-  { name: "Aetna",           initials: "Ae", colour: "#7d3f98" },
+  { name: "Foresters",       initials: "F",  colour: "#00694e", src: "/carriers/foresters.svg", wordmark: true },
+  { name: "Americo",         initials: "A",  colour: "#c8102e", src: "/carriers/americo.png",   wordmark: true },
+  { name: "Aetna",           initials: "Ae", colour: "#7d3f98", src: "/carriers/aetna.svg",     wordmark: true },
   { name: "Transamerica",    initials: "T",  colour: "#e4002b", src: "/carriers/transamerica.png" },
   { name: "Gerber Life",     initials: "G",  colour: "#0069aa", src: "/carriers/gerber-life.png" },
   { name: "Corebridge",      initials: "C",  colour: "#1b3fc4", src: "/carriers/corebridge.png" },
-  { name: "Prudential",      initials: "P",  colour: "#0b4ea2" },
+  { name: "Prudential",      initials: "P",  colour: "#0b4ea2", src: "/carriers/prudential.svg", wordmark: true },
   { name: "Banner Life",     initials: "B",  colour: "#003da5", src: "/carriers/banner-life.png" },
   { name: "SBLI",            initials: "S",  colour: "#00457c", src: "/carriers/sbli.png" },
 ];
