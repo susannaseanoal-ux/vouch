@@ -26,6 +26,19 @@ export default function NewLead({ onClose, onCreated, say }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose, busy]);
 
+  /* Same as the lead panel: hold the page still underneath, and take
+     the wheel back off Lenis while this is open. */
+  useEffect(() => {
+    const y = window.scrollY;
+    document.body.style.overflow = "hidden";
+    window.__lenis?.stop();
+    return () => {
+      document.body.style.overflow = "";
+      window.__lenis?.start();
+      window.__lenis ? window.__lenis.scrollTo(y, { immediate: true }) : window.scrollTo(0, y);
+    };
+  }, []);
+
   const set = (k) => (e) => setFields((f) => ({ ...f, [k]: e.target.value }));
 
   async function submit(e) {
@@ -49,8 +62,8 @@ export default function NewLead({ onClose, onCreated, say }) {
 
   return (
     <>
-      <div className="drawer-scrim" onClick={() => !busy && onClose()} />
-      <aside className="drawer" aria-label="Add a lead">
+      <div className="drawer-scrim" data-lenis-prevent onClick={() => !busy && onClose()} />
+      <aside className="drawer" aria-label="Add a lead" data-lenis-prevent>
         <div className="dr-head">
           <div>
             <p className="eyebrow">New lead</p>

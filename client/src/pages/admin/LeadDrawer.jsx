@@ -67,6 +67,24 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  /* While the panel is open the page behind it must not move.
+
+     Two things want to scroll it: the browser, once the panel's own
+     content reaches its end, and Lenis, which listens for wheel events
+     on the window and does not care what is on top. The attribute on
+     the panel handles Lenis; stopping it here handles the rest, and
+     keeps the reader's place in the lead list for when they close. */
+  useEffect(() => {
+    const y = window.scrollY;
+    document.body.style.overflow = "hidden";
+    window.__lenis?.stop();
+    return () => {
+      document.body.style.overflow = "";
+      window.__lenis?.start();
+      window.__lenis ? window.__lenis.scrollTo(y, { immediate: true }) : window.scrollTo(0, y);
+    };
+  }, []);
+
   async function act(label, fn) {
     setBusy(label);
     try {
@@ -187,8 +205,8 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
 
   return (
     <>
-      <div className="drawer-scrim" onClick={onClose} />
-      <aside className="drawer" aria-label="Lead details">
+      <div className="drawer-scrim" data-lenis-prevent onClick={onClose} />
+      <aside className="drawer" aria-label="Lead details" data-lenis-prevent>
         <div className="dr-head">
           <div>
             <p className="eyebrow">{lead.typeLabel}</p>

@@ -454,3 +454,9 @@ table.leads tr.is-cursor { background: var(--brand-wash); box-shadow: inset 0 0 
   .field-row { grid-template-columns: 1fr auto; }
   .field-row .field-label { grid-column: 1 / -1; }
 }
+
+/* The panel owns its own scrolling. overscroll-behavior stops the page
+   underneath taking over the moment the panel reaches its end - the
+   thing that makes an open panel feel like it is sliding off. */
+.drawer { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.drawer-scrim { overscroll-behavior: contain; }
