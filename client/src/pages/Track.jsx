@@ -12,9 +12,25 @@ export default function Track() {
   const [busy, setBusy] = useState(false);
   const [pdf, setPdf] = useState("");        // "" | "working" | error text
 
+  /* Fetch the PDF library as soon as there is something to download.
+     It is the click that cannot afford to wait: a browser only allows a
+     download while it is still handling the click that asked for one,
+     so the library has to already be here when that click arrives. */
+  useEffect(() => {
+    if (!lead) return;
+    const t = setTimeout(() => {
+      import("../lib/leadPdf.js").then((m) => m.preloadPdf()).catch(() => {});
+    }, 800);
+    return () => clearTimeout(t);
+  }, [lead]);
+
   /* The PDF is built here in the browser from what is already on screen.
      The library it needs is fetched on the first click rather than by
      every visitor to the site. */
+  const warmPdf = () => {
+    import("../lib/leadPdf.js").then((m) => m.preloadPdf()).catch(() => {});
+  };
+
   async function savePdf() {
     if (!lead) return;
     setPdf("working");
@@ -110,7 +126,8 @@ export default function Track() {
                     </span>
 
                     <button className="btn btn-outline btn-sm" type="button"
-                            onClick={savePdf} disabled={pdf === "working"}>
+                            onClick={savePdf} disabled={pdf === "working"}
+                            onPointerEnter={warmPdf} onFocus={warmPdf}>
                       <DownloadIcon />
                       {pdf === "working" ? "Preparing…" : "Download PDF"}
                     </button>

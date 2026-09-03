@@ -20,21 +20,28 @@ const MUTED = [110, 128, 150];
 const ROYAL = [27, 63, 196];
 const RULE = [223, 232, 241];
 
-/** The logo, as a data URL. Returns null if it cannot be had. */
-async function loadLogo() {
-  try {
-    const res = await fetch("/logo.jpeg");
-    if (!res.ok) return null;
-    const blob = await res.blob();
-    return await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return null;                          // a missing logo must not cost the download
+/* The logo, as a data URL. Fetched once and remembered - it is the
+   same image on every download. Returns null if it cannot be had. */
+let logoPromise = null;
+function loadLogo() {
+  if (!logoPromise) {
+    logoPromise = (async () => {
+      try {
+        const res = await fetch("/logo.jpeg");
+        if (!res.ok) return null;
+        const blob = await res.blob();
+        return await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(blob);
+        });
+      } catch {
+        return null;                      // a missing logo must not cost the download
+      }
+    })();
   }
+  return logoPromise;
 }
 
 /**
@@ -218,10 +225,57 @@ export function buildLeadPdf(jsPDF, lead, logo = null) {
   return doc;
 }
 
-/** Builds it and hands it to the browser as a download. */
+/* ===================================================================
+   Handing the finished file to the browser.
+
+   A browser only lets a page start a download while it is still dealing
+   with the click that asked for one, and that permission expires after
+   a few seconds. Fetching the library at click time spent it: on a slow
+   connection the 400KB import outlasted the click, the download was
+   refused, and - because a refusal is silent - nothing was thrown for
+   us to catch or show. The button simply did nothing.
+
+   So the library and the logo are fetched ahead of time, and the click
+   only lays out a document that is already in memory.
+   =================================================================== */
+
+let libPromise = null;
+const lib = () => (libPromise ||= import("jspdf").then((m) => m.jsPDF));
+
+/** Fetches the library and the logo early, so the first click is instant. */
+export function preloadPdf() {
+  lib().catch(() => {});
+  loadLogo().catch(() => {});
+}
+
+/* Some browsers - iOS Safari above all - accept the anchor but ignore
+   its download attribute for a blob. Opening the file is the honest
+   second best: it lands in the PDF viewer, where saving is one tap. */
+function handOver(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  if ("download" in a) {
+    a.href = url;
+    a.download = filename;
+    a.rel = "noopener";
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } else if (!window.open(url, "_blank", "noopener")) {
+    URL.revokeObjectURL(url);
+    throw new Error("Your browser blocked the download. Please allow pop-ups for this site.");
+  }
+
+  /* Revoking at once can cancel a download that has not begun reading.
+     A minute is far longer than any of them need. */
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+/** Builds the document and hands it to the browser as a download. */
 export async function downloadLeadPdf(lead) {
-  const { jsPDF } = await import("jspdf");
-  const logo = await loadLogo();
+  const [jsPDF, logo] = await Promise.all([lib(), loadLogo()]);
   const doc = buildLeadPdf(jsPDF, lead, logo);
-  doc.save(`${lead.leadId}-request.pdf`);
+  handOver(doc.output("blob"), `${lead.leadId}-request.pdf`);
 }
