@@ -438,3 +438,21 @@ table.leads tr.is-cursor { background: var(--brand-wash); box-shadow: inset 0 0 
   border-color: transparent !important;
 }
 .admin-nav-btn:hover { background: rgba(255, 255, 255, .22) !important; color: #fff !important; }
+
+/* ---- editable question list on a lead ------------------------------- */
+.fieldset { display: flex; flex-direction: column; gap: .5rem; }
+.field-row {
+  display: grid; grid-template-columns: 11rem 1fr auto; gap: .5rem; align-items: start;
+}
+/* The question itself is editable, so a mislabelled field can be fixed
+   rather than deleted and re-added. It is styled quieter than the
+   answer, because the answer is what an agent is usually correcting. */
+.field-row .field-label {
+  font-size: .78rem; font-weight: 600; color: var(--text-3);
+  background: var(--bg-raise); padding: .55rem .6rem;
+}
+.field-row textarea { min-height: 2.6rem; }
+@media (max-width: 620px) {
+  .field-row { grid-template-columns: 1fr auto; }
+  .field-row .field-label { grid-column: 1 / -1; }
+}

@@ -50,8 +50,12 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
       state: l.state || "",
       status: l.status || "",
       agentNotes: l.agentNotes || "",
+      type: l.type || "coverage",
       createdAt: dtLocal(l.createdAt),
-      fields: { ...(l.fields || {}) },
+      /* Held as ordered pairs rather than an object: renaming a key in
+         place is what lets an agent fix a mislabelled question without
+         the field jumping to the end of the list. */
+      fields: Object.entries(l.fields || {}).map(([label, value]) => ({ label, value })),
     });
     setDirty(false);
   }, [data]);
@@ -102,9 +106,23 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
     setDirty(true);
   };
 
-  const setSubmitted = (label) => (e) => {
+  const setPair = (i, key) => (e) => {
     const v = e.target.value;
-    setEdit((f) => ({ ...f, fields: { ...f.fields, [label]: v } }));
+    setEdit((f) => {
+      const fields = f.fields.slice();
+      fields[i] = { ...fields[i], [key]: v };
+      return { ...f, fields };
+    });
+    setDirty(true);
+  };
+
+  const addPair = () => {
+    setEdit((f) => ({ ...f, fields: [...f.fields, { label: "", value: "" }] }));
+    setDirty(true);
+  };
+
+  const dropPair = (i) => {
+    setEdit((f) => ({ ...f, fields: f.fields.filter((_, n) => n !== i) }));
     setDirty(true);
   };
 
@@ -122,7 +140,15 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
           status: edit.status,
           agentNotes: edit.agentNotes,
           createdAt: edit.createdAt ? new Date(edit.createdAt).toISOString() : undefined,
-          fields: edit.fields,
+          type: edit.type,
+          /* Blank labels are dropped rather than saved as an empty
+             question, and a later duplicate wins - the same way an
+             object literal would behave. */
+          fields: Object.fromEntries(
+            edit.fields
+              .map((f) => [String(f.label).trim(), f.value])
+              .filter(([label]) => label)
+          ),
         },
       });
       return { ...r, message: "Customer details saved." };
@@ -289,46 +315,66 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
                     </select>
                   </label>
                   <label className="field">
+                    <span>Request type</span>
+                    <select value={edit.type} onChange={setField("type")}>
+                      <option value="coverage">Coverage request</option>
+                      <option value="interview">Group interview</option>
+                    </select>
+                  </label>
+                  <label className="field">
                     <span>Submitted</span>
                     <input type="datetime-local" value={edit.createdAt} onChange={setField("createdAt")} />
                   </label>
                 </div>
 
-                {Object.keys(edit.fields).length > 0 && (
-                  <>
-                    <h3 style={{ marginTop: "1.4rem" }}>
-                      What they filled in <span className="soft">as it appears on their copy</span>
-                    </h3>
-                    <div className="dr-grid">
-                      {Object.entries(edit.fields).map(([label, value]) => {
-                        const kind = kindFor(label);
-                        const wide = kind.type === "textarea" || String(value).length > 60;
-                        return (
-                          <label className={"field" + (wide ? " span-2" : "")} key={label}>
-                            <span>{label}</span>
+                <h3 style={{ marginTop: "1.4rem" }}>
+                  What they filled in <span className="soft">as it appears on their copy</span>
+                </h3>
 
-                            {kind.type === "select" ? (
-                              <select value={value} onChange={setSubmitted(label)}>
-                                <option value="">Not given</option>
-                                {/* A value the customer gave that is no longer
-                                    on the list still has to be selectable, or
-                                    saving would silently discard it. */}
-                                {!kind.options.includes(value) && value && <option>{value}</option>}
-                                {kind.options.map((o) => <option key={o}>{o}</option>)}
-                              </select>
-                            ) : kind.type === "date" ? (
-                              <input type="date" value={asDateValue(value)} onChange={setSubmitted(label)} />
-                            ) : wide ? (
-                              <textarea rows={3} value={value} onChange={setSubmitted(label)} />
-                            ) : (
-                              <input type={kind.type} value={value} onChange={setSubmitted(label)} />
-                            )}
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
+                <div className="fieldset">
+                  {edit.fields.map((f, i) => {
+                    const kind = kindFor(f.label);
+                    return (
+                      <div className="field-row" key={i}>
+                        <input
+                          className="field-label"
+                          type="text"
+                          value={f.label}
+                          onChange={setPair(i, "label")}
+                          placeholder="Question"
+                          aria-label="Question"
+                        />
+
+                        {kind.type === "select" ? (
+                          <select value={f.value} onChange={setPair(i, "value")} aria-label={f.label}>
+                            <option value="">Not given</option>
+                            {/* A value that is no longer on the list must
+                                still be selectable, or saving would
+                                silently discard what they told us. */}
+                            {!kind.options.includes(f.value) && f.value && <option>{f.value}</option>}
+                            {kind.options.map((o) => <option key={o}>{o}</option>)}
+                          </select>
+                        ) : kind.type === "date" ? (
+                          <input type="date" value={asDateValue(f.value)}
+                                 onChange={setPair(i, "value")} aria-label={f.label} />
+                        ) : kind.type === "textarea" || String(f.value).length > 60 ? (
+                          <textarea rows={2} value={f.value} onChange={setPair(i, "value")} aria-label={f.label} />
+                        ) : (
+                          <input type={kind.type} value={f.value}
+                                 onChange={setPair(i, "value")} aria-label={f.label} />
+                        )}
+
+                        <button type="button" className="row-del" title="Remove this question"
+                                onClick={() => dropPair(i)}>×</button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <button type="button" className="btn btn-ghost btn-sm" style={{ marginTop: ".7rem" }}
+                        onClick={addPair}>
+                  + Add a question
+                </button>
 
                 <label className="field span-2" style={{ marginTop: "1rem" }}>
                   <span>Agent notes <span className="hint">(internal - the customer never sees this)</span></span>
