@@ -13,6 +13,14 @@ const adminUserSchema = new mongoose.Schema(
     displayName: { type: String, default: "", maxlength: 120 },
     role: { type: String, enum: Object.keys(ADMIN_ROLES), default: "admin" },
 
+    /* The owner: the account this business belongs to.
+       Other administrators can run the dashboard, but they cannot
+       remove the owner, demote them, or reset their password - so no
+       colleague, and nobody who gets hold of a colleague's login, can
+       lock the owner out of their own system. Exactly one account
+       carries this. */
+    isOwner: { type: Boolean, default: false },
+
     lastLogin: { type: Date, default: null },
 
     /* Slows down anyone working through a password list. */

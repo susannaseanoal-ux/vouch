@@ -23,6 +23,7 @@ export default function Staff() {
   const [me, setMe] = useState(null);
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState({});
+  const [youAreOwner, setYouAreOwner] = useState(false);
   const [form, setForm] = useState(EMPTY());
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -47,6 +48,7 @@ export default function Staff() {
       const d = await api("/admin/users", { auth: true });
       setUsers(d.users);
       setRoles(d.roles);
+      setYouAreOwner(!!d.youAreOwner);
     } catch (err) {
       say(err.message, "bad");
     } finally {
@@ -173,7 +175,11 @@ export default function Staff() {
                     <label htmlFor="u-role">Access</label>
                     <select id="u-role" value={form.role} onChange={set("role")}>
                       <option value="viewer">Viewer — reads everything, changes nothing</option>
-                      <option value="admin">Administrator — full access, including staff</option>
+                      {/* Handing out administrator access is the owner's
+                          call; the server refuses it from anyone else. */}
+                      {youAreOwner && (
+                        <option value="admin">Administrator — full access, including staff</option>
+                      )}
                     </select>
                   </div>
 
@@ -204,14 +210,15 @@ export default function Staff() {
                     <li key={u.id} className="news-row row-in" style={{ "--i": i }}>
                       <div className="news-row-main">
                         <p className="news-row-top">
-                          <span className={"pill " + (u.role === "admin" ? "pill-new" : "")}>
-                            {roles[u.role] || u.role}
+                          <span className={"pill " + (u.isOwner ? "pill-sold" : u.role === "admin" ? "pill-new" : "")}>
+                            {u.isOwner ? "Owner" : roles[u.role] || u.role}
                           </span>
                           {u.id === me.id && <span className="cell-sub">this is you</span>}
                           {u.locked && <span className="pill pill-closed">locked</span>}
                         </p>
                         <span className="cell-name">{u.displayName || u.username}</span>
                         <span className="cell-sub">
+                          {u.isOwner && "protected · "}
                           {u.username}
                           {u.lastLogin
                             ? ` · last signed in ${new Date(u.lastLogin).toLocaleDateString()}`
@@ -235,7 +242,9 @@ export default function Staff() {
 
                       {/* Nothing is offered against your own account: you
                           cannot demote, lock out or delete yourself. */}
-                      {u.id !== me.id && (
+                      {/* Nothing is offered against your own account, and
+                          nothing at all against the owner's. */}
+                      {u.id !== me.id && !u.isOwner && (u.role !== "admin" || youAreOwner) && (
                         <div className="news-row-acts">
                           <button className="btn btn-ghost btn-sm"
                                   onClick={() => changeRole(u, u.role === "admin" ? "viewer" : "admin")}>
