@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../../lib/api.js";
+import { STATES, kindFor, asDateValue } from "../../lib/leadFields.js";
 
 /** A datetime-local input wants "YYYY-MM-DDTHH:MM", in local time. */
 function dtLocal(value) {
@@ -127,6 +128,24 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
       return { ...r, message: "Customer details saved." };
     });
 
+  /* Removing a lead takes its milestones with it. Asks twice, because
+     there is no undo and the customer's reference stops working. */
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const removeLead = async () => {
+    if (!confirmDelete) { setConfirmDelete(true); return; }
+    setConfirmDelete(false);
+    setBusy("delete");
+    try {
+      const r = await api(`/admin/leads/${encodeURIComponent(leadId)}`, { method: "DELETE", auth: true });
+      say(r.message || "Lead deleted.", "good");
+      onChanged();
+      onClose();
+    } catch (err) {
+      say(err.message, "bad");
+      setBusy("");
+    }
+  };
+
   const saveIp = () =>
     act("ip", async () => {
       const r = await api(`/admin/leads/${encodeURIComponent(leadId)}`, {
@@ -150,7 +169,17 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
             <h2>{lead.name}</h2>
             <p className="dr-id">{lead.leadId}</p>
           </div>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+          <div style={{ display: "flex", gap: ".5rem", flex: "none" }}>
+            {canEdit && (
+              <button className={"btn btn-sm " + (confirmDelete ? "btn-danger" : "btn-ghost")}
+                      disabled={busy === "delete"}
+                      onClick={removeLead}
+                      onBlur={() => setConfirmDelete(false)}>
+                {busy === "delete" ? "Deleting…" : confirmDelete ? "Really delete?" : "Delete"}
+              </button>
+            )}
+            <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+          </div>
         </div>
 
         <div className="dr-body">
@@ -248,7 +277,10 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
                   </label>
                   <label className="field">
                     <span>State</span>
-                    <input type="text" value={edit.state} onChange={setField("state")} />
+                    <select value={edit.state} onChange={setField("state")}>
+                      <option value="">Not given</option>
+                      {STATES.map((st) => <option key={st}>{st}</option>)}
+                    </select>
                   </label>
                   <label className="field">
                     <span>Status</span>
@@ -268,14 +300,32 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
                       What they filled in <span className="soft">as it appears on their copy</span>
                     </h3>
                     <div className="dr-grid">
-                      {Object.entries(edit.fields).map(([label, value]) => (
-                        <label className={"field" + (String(value).length > 60 ? " span-2" : "")} key={label}>
-                          <span>{label}</span>
-                          {String(value).length > 60
-                            ? <textarea rows={3} value={value} onChange={setSubmitted(label)} />
-                            : <input type="text" value={value} onChange={setSubmitted(label)} />}
-                        </label>
-                      ))}
+                      {Object.entries(edit.fields).map(([label, value]) => {
+                        const kind = kindFor(label);
+                        const wide = kind.type === "textarea" || String(value).length > 60;
+                        return (
+                          <label className={"field" + (wide ? " span-2" : "")} key={label}>
+                            <span>{label}</span>
+
+                            {kind.type === "select" ? (
+                              <select value={value} onChange={setSubmitted(label)}>
+                                <option value="">Not given</option>
+                                {/* A value the customer gave that is no longer
+                                    on the list still has to be selectable, or
+                                    saving would silently discard it. */}
+                                {!kind.options.includes(value) && value && <option>{value}</option>}
+                                {kind.options.map((o) => <option key={o}>{o}</option>)}
+                              </select>
+                            ) : kind.type === "date" ? (
+                              <input type="date" value={asDateValue(value)} onChange={setSubmitted(label)} />
+                            ) : wide ? (
+                              <textarea rows={3} value={value} onChange={setSubmitted(label)} />
+                            ) : (
+                              <input type={kind.type} value={value} onChange={setSubmitted(label)} />
+                            )}
+                          </label>
+                        );
+                      })}
                     </div>
                   </>
                 )}

@@ -7,7 +7,7 @@ import {
   STAGES, buildJourney, stageCatalogue, stageLabel,
   statusAfterStage, humanDuration, formatMoment,
 } from "../lib/journey.js";
-import { normalizeLeadId } from "../lib/leadId.js";
+import { newLeadId, normalizeLeadId } from "../lib/leadId.js";
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -79,6 +79,61 @@ router.get("/stats", async (_req, res, next) => {
       byStatus,
       statuses: LEAD_STATUSES,
       types: LEAD_TYPES,
+    });
+  } catch (err) { next(err); }
+});
+
+/* ------------------------------------------------------------------
+   Create a lead by hand
+
+   Enquiries arrive by phone and at events, not only through the form.
+   Without this an agent has to fill in the public website pretending to
+   be the customer, which lands a wrong IP on the record and trips the
+   rate limiter after a few.
+   ------------------------------------------------------------------ */
+router.post("/leads", requireFullAdmin, async (req, res, next) => {
+  try {
+    const b = req.body || {};
+    const type = Object.keys(LEAD_TYPES).includes(b.type) ? b.type : "coverage";
+
+    const fields = {};
+    if (b.fields && typeof b.fields === "object") {
+      for (const [label, value] of Object.entries(b.fields)) {
+        const k = String(label).trim().slice(0, 120);
+        const v = String(value ?? "").trim().slice(0, 5000);
+        if (k && v) fields[k] = v;
+      }
+    }
+
+    const full = String(fields["Full Name"] || b.name || "").trim();
+    if (!full) {
+      return res.status(422).json({ ok: false, error: "A lead needs at least a name." });
+    }
+    const [firstName, ...rest] = full.split(/\s+/);
+
+    const lead = await Lead.create({
+      leadId: await newLeadId(),
+      type,
+      firstName,
+      lastName: rest.join(" "),
+      email: String(fields.Email || "").trim(),
+      phone: String(fields.Phone || "").trim(),
+      state: String(fields.State || "").trim(),
+      status: LEAD_STATUSES.includes(b.status) ? b.status : "New",
+      agentNotes: String(b.agentNotes || "").trim().slice(0, 5000),
+      fields,
+      /* Taken by a person, not observed from a connection - so the
+         address field says that rather than recording the office IP as
+         though the customer had visited. */
+      sourceIp: "",
+      userAgent: `added by ${req.admin.username}`,
+      emailSent: true,
+    });
+
+    res.status(201).json({
+      ok: true,
+      message: `Lead ${lead.leadId} created.`,
+      lead: present(lead),
     });
   } catch (err) { next(err); }
 });

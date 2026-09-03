@@ -5,6 +5,7 @@ import Logo from "../../components/Logo.jsx";
 import LeadDrawer from "./LeadDrawer.jsx";
 import CommandPalette from "./CommandPalette.jsx";
 import Pipeline from "./Pipeline.jsx";
+import NewLead from "./NewLead.jsx";
 import Reveal from "../../components/Reveal.jsx";
 import Counter from "../../components/Counter.jsx";
 import { Tilt, useTheme } from "../../components/Fx.jsx";
@@ -25,6 +26,7 @@ export default function Dashboard() {
   const [page, setPage] = useState(1);
 
   const [openLead, setOpenLead] = useState(null);
+  const [adding, setAdding] = useState(false);
   const [toast, setToast] = useState(null);
   const [byStatus, setByStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -168,6 +170,11 @@ export default function Dashboard() {
               }}>
                 <span>Search</span><kbd>Ctrl</kbd><kbd>K</kbd>
               </button>
+              {admin.role !== "viewer" && (
+                <button className="btn btn-primary btn-sm" onClick={() => setAdding(true)}>
+                  + New lead
+                </button>
+              )}
               <button className="btn btn-ghost btn-sm" onClick={refresh}>Refresh</button>
             </div>
           </div>
@@ -275,6 +282,14 @@ export default function Dashboard() {
           </section>
         </div>
       </div>
+
+      {adding && (
+        <NewLead
+          say={say}
+          onClose={() => setAdding(false)}
+          onCreated={(leadId) => { setAdding(false); refresh(); if (leadId) setOpenLead(leadId); }}
+        />
+      )}
 
       {openLead && (
         <LeadDrawer
