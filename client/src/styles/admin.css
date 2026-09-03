@@ -310,11 +310,11 @@ kbd {
    =================================================================== */
 .pipe {
   background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--r-md); padding: 1.1rem 1.2rem 1.3rem; margin-bottom: 1.6rem;
+  border-radius: var(--r-md); padding: 1.1rem 1.2rem 1.2rem; margin-bottom: 1.6rem;
 }
 .pipe-head {
   display: flex; align-items: baseline; justify-content: space-between;
-  gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;
+  gap: 1rem; flex-wrap: wrap; margin-bottom: .9rem;
 }
 .pipe-head h2 { font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); }
 .pipe-sum { display: flex; gap: 1.1rem; font-size: .8rem; color: var(--text-3); }
@@ -322,66 +322,64 @@ kbd {
 .pipe-sum .is-won b { color: var(--ok); }
 .pipe-sum .is-lost b { color: var(--text-4); }
 
-.pipe-bars { display: grid; grid-template-columns: repeat(5, 1fr); gap: .5rem; }
+.pipe-bars { display: grid; grid-template-columns: repeat(5, 1fr); gap: .6rem; }
 
+/* A stage is a card, not a column. The count is the information at
+   these numbers; the bar underneath only shows where work is piling. */
 .pipe-bar {
-  display: flex; flex-direction: column; align-items: center; gap: .45rem;
-  padding: .7rem .4rem .6rem; border: 1px solid transparent; border-radius: var(--r-sm);
-  background: none; cursor: pointer; transition: background .2s, border-color .2s;
+  display: flex; flex-direction: column; align-items: stretch; gap: .5rem;
+  padding: .8rem .85rem .7rem; text-align: left;
+  background: var(--bg-raise); border: 1px solid var(--line);
+  border-radius: var(--r-sm); cursor: pointer;
+  transition: border-color .2s, background .2s, transform .2s var(--ease);
 }
-.pipe-bar:hover { background: var(--brand-wash); border-color: var(--brand-line); }
+.pipe-bar:hover { border-color: var(--brand-line); transform: translateY(-1px); }
 
-/* The icon names the stage even before there is a single lead in it,
-   so an empty pipeline still reads as five stages rather than as a
-   panel that failed to load. */
+.pipe-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+
 .pipe-icon {
-  width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  width: 28px; height: 28px; border-radius: 8px; flex: none;
+  display: grid; place-items: center;
   background: var(--brand-wash); color: var(--brand-lift);
-  border: 1px solid var(--brand-line);
 }
-.pipe-bar.is-empty .pipe-icon {
-  background: transparent; color: var(--text-4); border-color: var(--line);
+.pipe-count {
+  font-size: 1.4rem; font-weight: 700; color: var(--text);
+  font-variant-numeric: tabular-nums; line-height: 1;
 }
-
-.pipe-count { font-size: 1.1rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
-.pipe-bar.is-empty .pipe-count { color: var(--text-4); }
-
-.pipe-track {
-  width: 100%; height: 40px; border-radius: 8px;
-  background: var(--bg-raise); border: 1px solid var(--line-soft);
-  display: flex; align-items: flex-end; overflow: hidden;
-  position: relative;
-}
-
-/* A stage with nothing in it gets a flat baseline rather than a hollow
-   box. An empty rectangle reads as something that failed to render; a
-   line reads as a stage that is simply empty. */
-.pipe-bar.is-empty .pipe-track { background: none; border-color: transparent; }
-.pipe-bar.is-empty .pipe-track::after {
-  content: ""; position: absolute; left: .5rem; right: .5rem; bottom: 0;
-  height: 2px; border-radius: 2px; background: var(--line);
-}
-
-.pipe-fill {
-  width: 100%; border-radius: 7px;
-  background: linear-gradient(180deg, var(--brand-lift), var(--brand-deep));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18);
-  transition: height .7s var(--ease);
-}
-.pipe-bar.is-active .pipe-fill { background: linear-gradient(180deg, var(--ok), #0e6a4c); }
-.pipe-bar.is-active { background: var(--brand-wash); border-color: var(--brand); }
 
 .pipe-label {
-  font-size: .68rem; font-weight: 600; color: var(--text-3);
-  text-align: center; line-height: 1.25;
+  font-size: .72rem; font-weight: 600; color: var(--text-3);
+  line-height: 1.25;
 }
+
+/* 3px, full width, so five stages make one level row whatever the
+   numbers are. */
+.pipe-track {
+  height: 3px; border-radius: 3px; overflow: hidden;
+  background: var(--line-soft); display: block;
+}
+.pipe-fill {
+  display: block; height: 100%; border-radius: 3px;
+  background: var(--brand-lift);
+  transition: width .6s var(--ease);
+}
+
+/* An empty stage stays legible but recedes - it is not where the work
+   is, and should not compete with the stages that are. */
+.pipe-bar.is-empty { background: none; }
+.pipe-bar.is-empty .pipe-icon { background: transparent; color: var(--text-4); box-shadow: inset 0 0 0 1px var(--line); }
+.pipe-bar.is-empty .pipe-count { color: var(--text-4); font-weight: 600; }
+
+.pipe-bar.is-active {
+  background: var(--brand-wash); border-color: var(--brand);
+}
+.pipe-bar.is-active .pipe-fill { background: var(--ok); }
 
 .pipe-none {
   margin-top: .9rem; text-align: center; font-size: .82rem; color: var(--text-3);
 }
 @media (max-width: 640px) {
-  .pipe-bars { grid-template-columns: repeat(5, 1fr); gap: .25rem; }
-  .pipe-label { font-size: .58rem; }
+  .pipe-bars { grid-template-columns: repeat(2, 1fr); gap: .5rem; }
 }
 
 /* ===================================================================

@@ -3,13 +3,16 @@ import { useEffect, useRef, useState } from "react";
 /* ===================================================================
    The pipeline
 
-   Where every lead currently sits, as five stages read left to right.
-   Clicking a stage filters the table to it, so this is a control rather
+   Five stages read left to right, each a card: the stage's icon, how
+   many sit there, its name, and a thin bar showing its share of the
+   work. Clicking one filters the table, so this is a control rather
    than a picture.
 
-   Each stage always draws its icon and its track, even at zero. An
-   empty pipeline should look like an empty pipeline - five quiet stages
-   waiting for work - rather than like a panel that failed to load.
+   The bar is deliberately slight. An earlier version drew a tall
+   column per stage, which on a real pipeline - two here, one there,
+   three stages empty - filled the panel with heavy blue blocks and
+   empty boxes. At these numbers the count is the information; the bar
+   only shows where the work is piling up.
    =================================================================== */
 
 const STAGES = [
@@ -26,19 +29,10 @@ export default function Pipeline({ byStatus, onPick, active }) {
   const [grown, setGrown] = useState(false);
   const ref = useRef(null);
 
-  /* Bars grow once the panel is on screen.
-
-     The dependency on byStatus matters: this component returns null
-     while the stats are still loading, so on the first run there is no
-     element to observe. Without re-running when the data lands, the
-     observer is never attached, `grown` stays false, and every bar
-     renders at zero height - which looks exactly like a broken panel.
-
-     The timer is a second safety net for a background tab, where the
-     observer legitimately never fires. */
+  /* Depends on byStatus: this component renders nothing until the stats
+     land, so on the first run there is no element to observe. */
   useEffect(() => {
     if (!byStatus) return;
-
     const el = ref.current;
     if (!el) return;
 
@@ -73,7 +67,7 @@ export default function Pipeline({ byStatus, onPick, active }) {
 
       <div className="pipe-bars">
         {live.map((d, i) => {
-          const pct = grown && d.n ? Math.max(8, (d.n / peak) * 100) : 0;
+          const pct = grown && d.n ? Math.max(10, (d.n / peak) * 100) : 0;
           return (
             <button
               key={d.status}
@@ -86,12 +80,16 @@ export default function Pipeline({ byStatus, onPick, active }) {
               title={`${d.n} at ${d.status} - ${d.hint}. Click to filter.`}
               style={{ "--i": i }}
             >
-              <span className="pipe-icon"><Icon name={d.icon} /></span>
-              <span className="pipe-count">{d.n}</span>
-              <span className="pipe-track">
-                <span className="pipe-fill" style={{ height: pct + "%", transitionDelay: `${i * 90}ms` }} />
+              <span className="pipe-top">
+                <span className="pipe-icon"><Icon name={d.icon} /></span>
+                <span className="pipe-count">{d.n}</span>
               </span>
+
               <span className="pipe-label">{d.status}</span>
+
+              <span className="pipe-track">
+                <span className="pipe-fill" style={{ width: pct + "%", transitionDelay: `${i * 70}ms` }} />
+              </span>
             </button>
           );
         })}
@@ -99,7 +97,7 @@ export default function Pipeline({ byStatus, onPick, active }) {
 
       {total === 0 && (
         <p className="pipe-none">
-          No leads yet. The first one to come through the website will appear here.
+          No leads yet. The first one through the website will appear here.
         </p>
       )}
     </section>
@@ -116,7 +114,7 @@ const PATHS = {
 };
 
 const Icon = ({ name }) => (
-  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     {PATHS[name]}
   </svg>
