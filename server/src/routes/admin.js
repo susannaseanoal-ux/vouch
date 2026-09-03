@@ -8,6 +8,7 @@ import {
   statusAfterStage, humanDuration, formatMoment,
 } from "../lib/journey.js";
 import { newLeadId, normalizeLeadId } from "../lib/leadId.js";
+import { cleanLeadFields } from "../lib/leadFields.js";
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -96,14 +97,7 @@ router.post("/leads", requireFullAdmin, async (req, res, next) => {
     const b = req.body || {};
     const type = Object.keys(LEAD_TYPES).includes(b.type) ? b.type : "coverage";
 
-    const fields = {};
-    if (b.fields && typeof b.fields === "object") {
-      for (const [label, value] of Object.entries(b.fields)) {
-        const k = String(label).trim().slice(0, 120);
-        const v = String(value ?? "").trim().slice(0, 5000);
-        if (k && v) fields[k] = v;
-      }
-    }
+    const fields = cleanLeadFields(b.fields);
 
     const full = String(fields["Full Name"] || b.name || "").trim();
     if (!full) {
@@ -247,12 +241,9 @@ router.patch("/leads/:leadId", requireFullAdmin, async (req, res, next) => {
     }
 
     if (b.fields && typeof b.fields === "object") {
-      const clean = {};
-      for (const [label, value] of Object.entries(b.fields)) {
-        const k = String(label).trim().slice(0, 120);
-        if (k) clean[k] = String(value ?? "").slice(0, 5000);
-      }
-      lead.fields = clean;
+      /* keepEmpty: an agent clearing an answer means the field is now
+         blank, not that the question should disappear. */
+      lead.fields = cleanLeadFields(b.fields, { keepEmpty: true });
     }
 
     await lead.save();

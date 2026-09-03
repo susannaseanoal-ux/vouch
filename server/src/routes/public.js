@@ -4,6 +4,7 @@ import Lead, { LEAD_TYPES, typeLabel } from "../models/Lead.js";
 import { buildJourney, formatMoment } from "../lib/journey.js";
 import { newLeadId, normalizeLeadId } from "../lib/leadId.js";
 import { clientIp } from "../lib/clientIp.js";
+import { cleanLeadFields } from "../lib/leadFields.js";
 import { notifyTeam } from "../lib/mailer.js";
 
 const router = express.Router();
@@ -42,11 +43,7 @@ router.post("/leads", submitLimiter, async (req, res, next) => {
       return res.status(422).json({ ok: false, error: "Unknown request type." });
     }
 
-    const clean = {};
-    for (const [label, value] of Object.entries(fields)) {
-      const k = String(label).trim().slice(0, 120);
-      if (k) clean[k] = String(value ?? "").trim().slice(0, 5000);
-    }
+    const clean = cleanLeadFields(fields);
 
     const pick = (...names) => {
       for (const n of names) {
