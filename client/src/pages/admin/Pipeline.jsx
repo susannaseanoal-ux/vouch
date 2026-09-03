@@ -26,10 +26,19 @@ export default function Pipeline({ byStatus, onPick, active }) {
   const [grown, setGrown] = useState(false);
   const ref = useRef(null);
 
-  /* Bars grow once, when the section is first seen. The timer is a
-     safety net: if the observer never fires - a hidden tab, a browser
-     that throttles it - the bars must still end up drawn. */
+  /* Bars grow once the panel is on screen.
+
+     The dependency on byStatus matters: this component returns null
+     while the stats are still loading, so on the first run there is no
+     element to observe. Without re-running when the data lands, the
+     observer is never attached, `grown` stays false, and every bar
+     renders at zero height - which looks exactly like a broken panel.
+
+     The timer is a second safety net for a background tab, where the
+     observer legitimately never fires. */
   useEffect(() => {
+    if (!byStatus) return;
+
     const el = ref.current;
     if (!el) return;
 
@@ -38,9 +47,9 @@ export default function Pipeline({ byStatus, onPick, active }) {
     }, { threshold: 0.15 });
     io.observe(el);
 
-    const fallback = setTimeout(() => setGrown(true), 1200);
+    const fallback = setTimeout(() => setGrown(true), 800);
     return () => { io.disconnect(); clearTimeout(fallback); };
-  }, []);
+  }, [byStatus]);
 
   if (!byStatus) return null;
 
