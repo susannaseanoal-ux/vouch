@@ -16,6 +16,13 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
   const [ip, setIp] = useState("");
   const [ipDirty, setIpDirty] = useState(false);
 
+  /* Every detail on a lead is editable. An agent takes corrections over
+     the phone - a misheard surname, a new number, the wrong state - and
+     the record should end up right rather than preserving a typo the
+     customer made at 11pm on their phone. */
+  const [edit, setEdit] = useState(null);      // null until the lead loads
+  const [dirty, setDirty] = useState(false);
+
   const load = useCallback(async () => {
     try {
       setData(await api(`/admin/leads/${encodeURIComponent(leadId)}`, { auth: true }));
@@ -30,7 +37,22 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
   /* The field follows whatever the server last confirmed, so a save (or
      opening a different lead) leaves nothing stale in the box. */
   useEffect(() => {
-    if (data?.lead) { setIp(data.lead.sourceIp || ""); setIpDirty(false); }
+    if (!data?.lead) return;
+    const l = data.lead;
+    setIp(l.sourceIp || "");
+    setIpDirty(false);
+    setEdit({
+      firstName: l.firstName || "",
+      lastName: l.lastName || "",
+      email: l.email || "",
+      phone: l.phone || "",
+      state: l.state || "",
+      status: l.status || "",
+      agentNotes: l.agentNotes || "",
+      createdAt: dtLocal(l.createdAt),
+      fields: { ...(l.fields || {}) },
+    });
+    setDirty(false);
   }, [data]);
 
   // Escape closes the drawer, as it does everywhere else.
@@ -73,6 +95,38 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
     act("del:" + id, () =>
       api(`/admin/leads/${encodeURIComponent(leadId)}/stages/${id}`, { method: "DELETE", auth: true }));
 
+  const setField = (k) => (e) => {
+    const v = e.target.value;
+    setEdit((f) => ({ ...f, [k]: v }));
+    setDirty(true);
+  };
+
+  const setSubmitted = (label) => (e) => {
+    const v = e.target.value;
+    setEdit((f) => ({ ...f, fields: { ...f.fields, [label]: v } }));
+    setDirty(true);
+  };
+
+  const saveDetails = () =>
+    act("details", async () => {
+      const r = await api(`/admin/leads/${encodeURIComponent(leadId)}`, {
+        method: "PATCH",
+        auth: true,
+        body: {
+          firstName: edit.firstName,
+          lastName: edit.lastName,
+          email: edit.email,
+          phone: edit.phone,
+          state: edit.state,
+          status: edit.status,
+          agentNotes: edit.agentNotes,
+          createdAt: edit.createdAt ? new Date(edit.createdAt).toISOString() : undefined,
+          fields: edit.fields,
+        },
+      });
+      return { ...r, message: "Customer details saved." };
+    });
+
   const saveIp = () =>
     act("ip", async () => {
       const r = await api(`/admin/leads/${encodeURIComponent(leadId)}`, {
@@ -83,7 +137,7 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
 
   if (!data) return null;
 
-  const { lead, journey, stages, stageList } = data;
+  const { lead, journey, stages, stageList, statuses } = data;
   const caps = Object.fromEntries(stageList.map((s) => [s.key, s]));
 
   return (
@@ -168,14 +222,91 @@ export default function LeadDrawer({ leadId, canEdit, onClose, onChanged, say })
 
           {/* ---- details ---- */}
           <section className="dr-section">
-            <h3>What the customer submitted</h3>
-            <dl className="rows" style={{ border: "1px solid var(--line)", borderRadius: "var(--r-sm)" }}>
-              <div><dt>Submitted</dt><dd>{lead.createdH}</dd></div>
-              <div><dt>Status</dt><dd>{lead.status}</dd></div>
-              {Object.entries(lead.fields || {}).map(([k, v]) => (
-                <div key={k}><dt>{k}</dt><dd>{v || "—"}</dd></div>
-              ))}
-            </dl>
+            <h3>
+              Customer details
+              <span className="soft">{canEdit ? "everything here can be corrected" : "read only"}</span>
+            </h3>
+
+            {canEdit && edit ? (
+              <>
+                <div className="dr-grid">
+                  <label className="field">
+                    <span>First name</span>
+                    <input type="text" value={edit.firstName} onChange={setField("firstName")} />
+                  </label>
+                  <label className="field">
+                    <span>Last name</span>
+                    <input type="text" value={edit.lastName} onChange={setField("lastName")} />
+                  </label>
+                  <label className="field">
+                    <span>Email</span>
+                    <input type="email" value={edit.email} onChange={setField("email")} />
+                  </label>
+                  <label className="field">
+                    <span>Phone</span>
+                    <input type="tel" value={edit.phone} onChange={setField("phone")} />
+                  </label>
+                  <label className="field">
+                    <span>State</span>
+                    <input type="text" value={edit.state} onChange={setField("state")} />
+                  </label>
+                  <label className="field">
+                    <span>Status</span>
+                    <select value={edit.status} onChange={setField("status")}>
+                      {(statuses || []).map((s) => <option key={s}>{s}</option>)}
+                    </select>
+                  </label>
+                  <label className="field">
+                    <span>Submitted</span>
+                    <input type="datetime-local" value={edit.createdAt} onChange={setField("createdAt")} />
+                  </label>
+                </div>
+
+                {Object.keys(edit.fields).length > 0 && (
+                  <>
+                    <h3 style={{ marginTop: "1.4rem" }}>
+                      What they filled in <span className="soft">as it appears on their copy</span>
+                    </h3>
+                    <div className="dr-grid">
+                      {Object.entries(edit.fields).map(([label, value]) => (
+                        <label className={"field" + (String(value).length > 60 ? " span-2" : "")} key={label}>
+                          <span>{label}</span>
+                          {String(value).length > 60
+                            ? <textarea rows={3} value={value} onChange={setSubmitted(label)} />
+                            : <input type="text" value={value} onChange={setSubmitted(label)} />}
+                        </label>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                <label className="field span-2" style={{ marginTop: "1rem" }}>
+                  <span>Agent notes <span className="hint">(internal - the customer never sees this)</span></span>
+                  <textarea rows={3} value={edit.agentNotes} onChange={setField("agentNotes")} />
+                </label>
+
+                <div style={{ display: "flex", gap: ".6rem", alignItems: "center", marginTop: "1rem" }}>
+                  <button className="btn btn-primary btn-sm" type="button"
+                          disabled={!dirty || busy === "details"} onClick={saveDetails}>
+                    {busy === "details" ? "Saving…" : "Save details"}
+                  </button>
+                  {dirty && <span className="jrn-hint" style={{ margin: 0 }}>unsaved changes</span>}
+                </div>
+
+                <p className="jrn-hint">
+                  Changing the status here moves the lead on the customer's own progress page,
+                  the same as approving a milestone does.
+                </p>
+              </>
+            ) : (
+              <dl className="rows" style={{ border: "1px solid var(--line)", borderRadius: "var(--r-sm)" }}>
+                <div><dt>Submitted</dt><dd>{lead.createdH}</dd></div>
+                <div><dt>Status</dt><dd>{lead.status}</dd></div>
+                {Object.entries(lead.fields || {}).map(([k, v]) => (
+                  <div key={k}><dt>{k}</dt><dd>{v || "—"}</dd></div>
+                ))}
+              </dl>
+            )}
           </section>
 
           {/* ---- where it came from ---- */}
