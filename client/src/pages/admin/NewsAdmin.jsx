@@ -146,6 +146,7 @@ export default function NewsAdmin() {
         <div className="wrap admin-top-in">
           <Logo to="/" invert size={34} />
           <div className="admin-who">
+            <Link className="btn btn-sm admin-nav-btn" to="/admin/staff">Staff</Link>
             <Link className="btn btn-sm" to="/admin"
                   style={{ background: "rgba(255,255,255,.12)", color: "#fff", borderColor: "transparent" }}>
               Leads

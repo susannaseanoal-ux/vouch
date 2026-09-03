@@ -21,6 +21,7 @@ import newsRoutes from "./routes/news.js";
 import authRoutes from "./routes/auth.js";
 import adminRoutes from "./routes/admin.js";
 import adminNewsRoutes from "./routes/adminNews.js";
+import adminUserRoutes from "./routes/adminUsers.js";
 
 const app = express();
 
@@ -79,6 +80,7 @@ app.use("/api/auth", authRoutes);
 /* Mounted before the general admin router so /api/admin/news is matched
    here rather than falling through to it. */
 app.use("/api/admin/news", adminNewsRoutes);
+app.use("/api/admin/users", adminUserRoutes);
 app.use("/api/admin", adminRoutes);
 
 /* ------------------------------------------------------------------

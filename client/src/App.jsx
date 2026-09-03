@@ -15,6 +15,7 @@ import NewsArticle from "./pages/NewsArticle.jsx";
 import AdminLogin from "./pages/admin/Login.jsx";
 import Dashboard from "./pages/admin/Dashboard.jsx";
 import NewsAdmin from "./pages/admin/NewsAdmin.jsx";
+import Staff from "./pages/admin/Staff.jsx";
 
 export default function App() {
   const { pathname, hash } = useLocation();
@@ -57,6 +58,7 @@ export default function App() {
       "/news": "News - Vouch",
       "/admin": "Leads - Vouch",
       "/admin/news": "News - Vouch admin",
+      "/admin/staff": "Staff - Vouch admin",
       "/admin/login": "Agent sign-in - Vouch",
     };
     /* An article sets its own title once it knows what it is called. */
@@ -89,6 +91,7 @@ export default function App() {
               <Route path="/news/:slug" element={<NewsArticle />} />
               <Route path="/admin" element={<Dashboard />} />
               <Route path="/admin/news" element={<NewsAdmin />} />
+              <Route path="/admin/staff" element={<Staff />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

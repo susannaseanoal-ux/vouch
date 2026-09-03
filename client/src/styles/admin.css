@@ -310,11 +310,11 @@ kbd {
    =================================================================== */
 .pipe {
   background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--r-md); padding: 1.3rem 1.4rem 1.1rem; margin-bottom: 1.5rem;
+  border-radius: var(--r-md); padding: 1.1rem 1.2rem 1.3rem; margin-bottom: 1.6rem;
 }
 .pipe-head {
   display: flex; align-items: baseline; justify-content: space-between;
-  gap: 1rem; flex-wrap: wrap; margin-bottom: 1.2rem;
+  gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;
 }
 .pipe-head h2 { font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); }
 .pipe-sum { display: flex; gap: 1.1rem; font-size: .8rem; color: var(--text-3); }
@@ -323,26 +323,49 @@ kbd {
 .pipe-sum .is-lost b { color: var(--text-4); }
 
 .pipe-bars { display: grid; grid-template-columns: repeat(5, 1fr); gap: .5rem; }
+
 .pipe-bar {
   display: flex; flex-direction: column; align-items: center; gap: .45rem;
-  border: 0; background: none; cursor: pointer; padding: .3rem .2rem;
-  border-radius: 10px; transition: background .2s;
+  padding: .7rem .4rem .6rem; border: 1px solid transparent; border-radius: var(--r-sm);
+  background: none; cursor: pointer; transition: background .2s, border-color .2s;
 }
-.pipe-bar:hover { background: var(--brand-wash); }
+.pipe-bar:hover { background: var(--brand-wash); border-color: var(--brand-line); }
+
+/* The icon names the stage even before there is a single lead in it,
+   so an empty pipeline still reads as five stages rather than as a
+   panel that failed to load. */
+.pipe-icon {
+  width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--brand-wash); color: var(--brand-lift);
+  border: 1px solid var(--brand-line);
+}
+.pipe-bar.is-empty .pipe-icon {
+  background: transparent; color: var(--text-4); border-color: var(--line);
+}
+
 .pipe-count { font-size: 1.1rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+.pipe-bar.is-empty .pipe-count { color: var(--text-4); }
+
 .pipe-track {
-  width: 100%; height: 78px; border-radius: 8px;
-  background: var(--bg-sunk); display: flex; align-items: flex-end; overflow: hidden;
+  width: 100%; height: 44px; border-radius: 7px;
+  background: var(--bg-raise); border: 1px solid var(--line-soft);
+  display: flex; align-items: flex-end; overflow: hidden;
 }
 .pipe-fill {
-  width: 100%; border-radius: 8px; height: 0;
-  background: linear-gradient(180deg, var(--azure), var(--royal));
-  transition: height 1s var(--ease);
+  width: 100%; border-radius: 6px;
+  background: linear-gradient(180deg, var(--brand-lift), var(--brand-deep));
+  transition: height .7s var(--ease);
 }
 .pipe-bar.is-active .pipe-fill { background: linear-gradient(180deg, var(--ok), #0e6a4c); }
-.pipe-bar.is-active { background: var(--brand-wash); }
+.pipe-bar.is-active { background: var(--brand-wash); border-color: var(--brand); }
+
 .pipe-label {
-  font-size: .68rem; color: var(--text-4); text-align: center; line-height: 1.3;
+  font-size: .68rem; font-weight: 600; color: var(--text-3);
+  text-align: center; line-height: 1.25;
+}
+
+.pipe-none {
+  margin-top: .9rem; text-align: center; font-size: .82rem; color: var(--text-3);
 }
 @media (max-width: 640px) {
   .pipe-bars { grid-template-columns: repeat(5, 1fr); gap: .25rem; }
@@ -395,3 +418,11 @@ table.leads tr.is-cursor { background: var(--brand-wash); box-shadow: inset 0 0 
 .ip-edit { display: flex; gap: .6rem; align-items: flex-end; flex-wrap: wrap; }
 .ip-edit .field { flex: 1 1 14rem; }
 .ip-edit input { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .03em; }
+/* The dark bar's own buttons: light on dark in both themes, because the
+   bar itself is dark in both. */
+.admin-nav-btn {
+  background: rgba(255, 255, 255, .12) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+.admin-nav-btn:hover { background: rgba(255, 255, 255, .22) !important; color: #fff !important; }
