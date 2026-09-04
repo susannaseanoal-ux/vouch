@@ -176,9 +176,15 @@ export function buildLeadPdf(jsPDF, lead, logo = null, origin = "") {
   row("Request type", lead.typeLabel);
   row("Submitted", lead.submitted);
 
-  /* The only place this is ever shown to the customer. It is on the
-     downloaded copy and nowhere on the website. */
-  if (lead.sourceIp) row("Submitted from", lead.sourceIp);
+  /* The only place this is ever shown to the customer: on the downloaded
+     copy, and nowhere on the website.
+
+     Called what it is. It used to read "Submitted from", which is gentler
+     but left people hunting for an IP address that was already in front
+     of them. The row is printed even when nothing was recorded - a phone
+     lead has no address to record - because a row that quietly vanishes
+     looks exactly like one that was never added. */
+  row("IP address", lead.sourceIp || "Not recorded");
 
   const fields = lead.fields || {};
   const entries = Object.entries(fields).filter(([, v]) => String(v || "").trim());
