@@ -1,4 +1,4 @@
-import { BRAND } from "../brand.js";
+import { BRAND, trackUrlFor } from "../brand.js";
 
 /* ===================================================================
    The customer's copy of their request, as a PDF.
@@ -51,7 +51,7 @@ function loadLogo() {
  * a browser - a PDF is the kind of thing that looks fine until someone's
  * details are long enough to run off the page.
  */
-export function buildLeadPdf(jsPDF, lead, logo = null) {
+export function buildLeadPdf(jsPDF, lead, logo = null, origin = "") {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
 
   let y = 0;
@@ -142,6 +142,32 @@ export function buildLeadPdf(jsPDF, lead, logo = null) {
   doc.text(lead.status || "—", PAGE.w - M - 5, y + 6, { align: "right" });
 
   y += 22;
+
+  /* ---- where to find this again ------------------------------------
+     The reference above is only useful with somewhere to type it, and a
+     printed page cannot be searched. The whole address is spelled out
+     rather than hidden behind "click here", because this is a document
+     that gets printed, forwarded and read on paper. */
+
+  const track = trackUrlFor(lead.leadId, origin);
+
+  setFont(7.5, "bold", MUTED);
+  doc.text("FOLLOW YOUR REQUEST", M, y);
+  y += 5.5;
+
+  setFont(10, "normal", ROYAL);
+  doc.textWithLink(track, M, y, { url: track });
+
+  // Underline it, so it reads as a link on paper as well as on screen.
+  const linkW = doc.getTextWidth(track);
+  doc.setDrawColor(...ROYAL);
+  doc.setLineWidth(0.25);
+  doc.line(M, y + 1.2, M + linkW, y + 1.2);
+  y += 5.5;
+
+  setFont(8, "normal", MUTED);
+  doc.text("Open this at any time to see the latest progress on your request.", M, y);
+  y += 10;
 
   /* ---- what they sent us ------------------------------------------- */
 
@@ -276,6 +302,7 @@ function handOver(blob, filename) {
 /** Builds the document and hands it to the browser as a download. */
 export async function downloadLeadPdf(lead) {
   const [jsPDF, logo] = await Promise.all([lib(), loadLogo()]);
-  const doc = buildLeadPdf(jsPDF, lead, logo);
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  const doc = buildLeadPdf(jsPDF, lead, logo, origin);
   handOver(doc.output("blob"), `${lead.leadId}-request.pdf`);
 }
